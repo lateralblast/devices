@@ -1,0 +1,36 @@
+# 0.0.1: 
+# Initial version
+# 0.0.2:
+# Added code to import stencils
+# 0.0.2:
+# Added code to select server stencils
+# 0.0.3:
+# Added code to test type of files
+# 0.0.4:
+# Added code to load CSV file
+# 0.0.5:
+# Added code to determine location on page
+# 0.0.6: Thu 27 Oct 2016 11:24:09 AEDT
+# Numerous fixes
+# 0.0.7: Thu 27 Oct 2016 13:27:09 AEDT
+# Added code to put in blanking plates if name can't be resolved
+# 0.0.8: Thu 27 Oct 2016 13:46:52 AEDT
+# Fixed blanking plate placement
+# 0.0.9: Thu 27 Oct 2016 17:59:02 AEDT
+# Added code to create an output file for each rack within a list
+# 0.1.0: Thu 27 Oct 2016 23:10:26 AEDT
+# Added support for Dell rackmount servers
+# 0.1.1: Sat 29 Oct 2016 12:33:21 AEDT
+# Added support for Dell storage
+# 0.1.2: Sat 29 Oct 2016 13:33:21 AEDT
+# Added support for IBM servers
+# 0.1.3: Sat 29 Oct 2016 20:34:03 AEDT
+# Added support for NetApp storage
+# 0.1.4: Sun 30 Oct 2016 12:11:01 AEDT
+# Added code to unzip stencils file
+# 0.1.5: Sun 30 Oct 2016 12:46:36 AEDT
+# Fixed bugs
+# 0.1.6: Sun 30 Oct 2016 22:24:15 AEDT
+# Fixed bug with processing racks with one item
+# 0.1.7: Mon 31 Oct 2016 10:46:43 AEDT
+# More bug fixes
