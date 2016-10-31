@@ -470,9 +470,9 @@ if ($input_file -match "csv$") {
         $cur_back_ru_y = [float]$cur_back_ru_y + [float]$rack_space
       }
     }
+    # Output file  
     $doc.SaveAs($output_file)
     Write-Host "Output: $output_file"
   }
 }
 
-# Output file  
