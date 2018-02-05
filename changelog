@@ -34,3 +34,5 @@
 # Fixed bug with processing racks with one item
 # 0.1.7: Mon 31 Oct 2016 10:46:43 AEDT
 # More bug fixes
+# 0.1.8: Mon  5 Feb 2018 14:28:44 AEDT
+# Rewrite to use VisioBot3000 powershell module

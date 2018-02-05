@@ -28,6 +28,21 @@ Things to do:
 - Better determination of stencils names
 - Adding asset and serial information to stencils that are put on page
 - Excel import support
+- Fix export capability after rewrite
+
+Background
+----------
+
+Originally I used the inbuilt OS applictation automation of Visio, then I tried VisioPS/Visio module.
+The inbuilt OS support would not let me set the active sheet so that I could do a rack per sheet in Visio.
+The VisioPS/Visio powershell module would let me set the active page correctly, but the current version 
+does not appear to have the Stencil cmdlets or they have been moved in another Cmdlet and are not documented.
+
+Thus I started using VisioBot3000 which allows me to set the active page and use Stencils:
+
+https://github.com/MikeShepard/VisioBot3000
+
+I have rewritten the script to utilise this powershell module.
 
 Output
 ------
@@ -45,6 +60,15 @@ The following software is required:
 - Powershell
 - Visio
 - Visio Stencils for vendor products
+- VisioBot3000 Powershell Module
+
+Installing Powershell Module:
+
+```
+Y:\Code\devices>powershell "Install-Module VisioBot3000"
+```
+
+If you've got an existing Visio Powershell Module installed, you may need to uninstall it or use the -Clobber flag to overwrite conflicting Cmdlets
 
 If you want to clone the script and/or stencils:
 
@@ -112,11 +136,11 @@ usage: devices.ps1
 Example of a CSV file:
 
 ```
-$ more data\servers.csv
+$ more example.csv
 Hostname,Vendor,Architecture,Model,Rack,Top Rack Unit,Rack Units
 server1,Oracle,SPARC,M3000,A1,2,2
 server2,Oracle,SPARC,M5000,A1,12,10
-server3,Oracle,x86,X2-4,A1,14,3
+server3,Oracle,x86,X2-4,A1,15,3
 disk3,Pure,NA,Disk shelf,A1,17,2
 disk2,Pure,NA,Disk shelf,A1,19,2
 disk1,Pure,NA,Disk shelf,A1,21,2
@@ -125,7 +149,7 @@ server4,Pure,NA,FA M70,A1,26,3
 server5,Dell,x86,R820,A1,28,2
 server11,Oracle,SPARC,M3000,A2,2,2
 server12,Oracle,SPARC,M5000,A2,12,10
-server13,Oracle,x86,X2-4,A2,14,3
+server13,Oracle,x86,X2-4,A2,15,3
 disk3,Pure,NA,Disk shelf,A2,17,2
 disk2,Pure,NA,Disk shelf,A2,19,2
 disk1,Pure,NA,Disk shelf,A2,21,2
