@@ -160,7 +160,5 @@ server15,Dell,x86,R820,A2,28,2
 Importing CSV file and creating Visio diagrams:
 
 ```
-Y:\Code\devices>powershell -ExecutionPolicy ByPass -File devices.ps1 -inputfile data\servers.csv
-Output: Y:\Code\devices\output\rack-A1.vsd
-Output: Y:\Code\devices\output\rack-A2.vsd
+Y:\Code\devices>powershell -ExecutionPolicy ByPass -File devices.ps1 -inputfile input\example.csv -outputfile output\example.vsd
 ```
