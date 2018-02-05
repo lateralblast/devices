@@ -101,8 +101,6 @@ Currently there is some support for the following vendor stencils:
 
 - Oracle
 - Dell
-- IBM
-- NetApp
 - Pure
 
 Support for other vendors is relatively straight forward to add, 
