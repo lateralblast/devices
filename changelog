@@ -36,3 +36,5 @@
 # More bug fixes
 # 0.1.8: Mon  5 Feb 2018 14:28:44 AEDT
 # Rewrite to use VisioBot3000 powershell module
+# 0.1.9: Mon  5 Feb 2018 19:57:29 AEDT
+# Improved outputfile handling

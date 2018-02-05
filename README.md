@@ -28,7 +28,6 @@ Things to do:
 - Better determination of stencils names
 - Adding asset and serial information to stencils that are put on page
 - Excel import support
-- Fix export capability after rewrite
 
 Background
 ----------

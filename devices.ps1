@@ -2,12 +2,12 @@ param (
   [switch] $help,
   [switch] $version,
   [switch] $verbose,
-  [string] $inputfile  = "servers.xlsx", 
-  [string] $outputfile = "servers.vsd"
+  [string] $inputfile, 
+  [string] $outputfile
 )
 
 # Name:         Devices
-# Version:      0.1.8
+# Version:      0.1.9
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -99,9 +99,6 @@ if ($version) {
 
 if ($inputfile) {
   $input_file = $inputfile
-  if ($input_file -match "^servers.xlsx$") {
-    $input_file =  "$data_dir\servers.xlsx"
-  }
   if (!(Test-Path $input_file)) {
     Write-Host "File: '$input_file' does not exist"
     exit
@@ -121,8 +118,8 @@ if ($verbose) {
 
 if ($outputfile) {
   $output_file = $outputfile
-  if ($output_file -match "^servers.vsd$") {
-    $output_file =  "$output_dir\servers.vsd"
+  if (!($output_file -match ":")) {
+    $output_file = "$script_dir\$output_file"
   }
 }
 else {
@@ -380,5 +377,5 @@ if ($input_file -match "csv$") {
       $back_stencil   = New-VisioShape -master "$server_stencil_back" -Label "$hostname" -x $cur_back_ru_x -y $cur_back_ru_y
     }
   }
-  $doc = Complete-VisioDocument
+  $doc = Complete-VisioDocument -Close
 }
