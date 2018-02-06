@@ -26,7 +26,7 @@ At the moment the script is a proof of concept. It has support for a number of v
 Things to do:
 
 - Better determination of stencils names
-- Adding asset and serial information to stencils that are put on page
+- Expand capability of adding asset and serial information to stencils that are put on page
 - Excel import support
 
 Background

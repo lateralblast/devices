@@ -7,7 +7,7 @@ param (
 )
 
 # Name:         Devices
-# Version:      0.1.9
+# Version:      0.2.0
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -262,9 +262,21 @@ if ($input_file -match "csv$") {
     # Select Rack Page
     $page = Set-VisioPage "$rack" 
     # Place rack front stencil
-    $front_rack_shape = New-VisioShape -master rack_stencil -Label "Rack Front" -x $front_rack_x -y $front_rack_y
-    # Place rack front stencil
-    $back_rack_shape = New-VisioShape -master rack_stencil -Label "Rack Rear" -x $back_rack_x -y $back_rack_y
+    $location   = Set-NextShapePosition -x $front_rack_x -y $front_rack_y
+    $shape      = rack_stencil rack_front
+    $shape_data = Set-VisioShapeData -Shape $rack_front -Name ProductNumber ""
+    $shape_data = Set-VisioShapeData -Shape $rack_front -Name Manufacturer ""
+    $shape_data = Set-VisioShapeData -Shape $rack_front -Name ProductNumber ""
+    $shape_data = Set-VisioShapeData -Shape $rack_front -Name PartNumber ""
+    $shape_data = Set-VisioShapeData -Shape $rack_front -Name ProductDescription ""
+    # Place rack back stencil
+    $location   = Set-NextShapePosition -x $back_rack_x -y $back_rack_y
+    $shape      = rack_stencil rack_back
+    $shape_data = Set-VisioShapeData -Shape $rack_back -Name ProductNumber ""
+    $shape_data = Set-VisioShapeData -Shape $rack_back -Name Manufacturer ""
+    $shape_data = Set-VisioShapeData -Shape $rack_back -Name ProductNumber ""
+    $shape_data = Set-VisioShapeData -Shape $rack_back -Name PartNumber ""
+    $shape_data = Set-VisioShapeData -Shape $rack_back -Name ProductDescription ""
     # Process rows in CSV for current rack
     $cur_rows = $csv_rows | Where {$_.Rack -eq "$rack"}
     $max_rows = $cur_rows.count
@@ -273,15 +285,14 @@ if ($input_file -match "csv$") {
     }
     for ($row = 0; $row -lt $max_rows; $row++) {
       # Get Values from columns
-      $hostname = $csv_rows[$row].Hostname
-      $model    = $csv_rows[$row].Model
-      $top_ru   = $csv_rows[$row]."Top Rack Unit"
-      $vendor   = $csv_rows[$row].Vendor
-      $rack     = $csv_rows[$row].Rack
-      $rus      = $csv_rows[$row]."Rack Units"
-      $arch     = $csv_rows[$row].Architecture
-      $serial   = $csv_rows[$row]."Serial Number"
-      $info     = "Host: $hostname`nModel: $model`nS/N:$serial"
+      $hostname = $cur_rows[$row].Hostname
+      $model    = $cur_rows[$row].Model
+      $top_ru   = $cur_rows[$row]."Top Rack Unit"
+      $vendor   = $cur_rows[$row].Vendor
+      $rack     = $cur_rows[$row].Rack
+      $rus      = $cur_rows[$row]."Rack Units"
+      $arch     = $cur_rows[$row].Architecture
+      $serial   = $cur_rows[$row]."Serial Number"
       switch -regex ($vendor) {
         # Handle Dell Servers, Blades and Storage
         "Dell" {
@@ -289,92 +300,74 @@ if ($input_file -match "csv$") {
           $back_name  = "$model Rear"
           switch -regex ($model) {
             "^CX4|^NX4|^ES|^DD" {
-              $dell_emc_storage_stencil_front = Register-VisioShape -Name dell_emc_storage_stencil_front -From dell_emc_storage_stencils -MasterName "$front_name"
-              $dell_emc_storage_stencil_back  = Register-VisioShape -Name dell_emc_storage_stencil_back -From dell_emc_storage_stencils -MasterName "$back_name"
-              $server_stencil_front           = "dell_emc_storage_stencil_front"
-              $server_stencil_back            = "del_emc_storage_stencil_back"
+              $dell_emc_storage_stencil_front = Register-VisioShape -Name stencil_front -From dell_emc_storage_stencils -MasterName "$front_name"
+              $dell_emc_storage_stencil_back  = Register-VisioShape -Name stencil_back  -From dell_emc_storage_stencils -MasterName "$back_name"
             }
             "^R|^C" {
-              $dell_rack_server_stencil_front = Register-VisioShape -Name dell_rack_server_stencil_front -From dell_rack_server_stencils -MasterName "$front_name"
-              $dell_rack_server_stencil_back  = Register-VisioShape -Name dell_rack_server_stencil_back -From dell_rack_server_stencils -MasterName "$back_name"
-              $server_stencil_front           = "dell_rack_server_stencil_front"
-              $server_stencil_back            = "dell_rack_server_stencil_back"
+              $dell_rack_server_stencil_front = Register-VisioShape -Name stencil_front -From dell_rack_server_stencils -MasterName "$front_name"
+              $dell_rack_server_stencil_back  = Register-VisioShape -Name stencil_back  -From dell_rack_server_stencils -MasterName "$back_name"
             }
             "^M[0-9]" {
-              $dell_blade_server_stencil_front = Register-VisioShape -Name dell_blade_server_stencil_front -From dell_blade_server_stencils -MasterName "$front_name"
-              $dell_blade_server_stencil_back  = Register-VisioShape -Name dell_blade_server_stencil_back -From dell_blade_server_stencils -MasterName "$back_name"
-              $server_stencil_front            = "dell_blade_server_stencil_front"
-              $server_stencil_back             = "dell_blade_server_stencil_back"
+              $dell_blade_server_stencil_front = Register-VisioShape -Name stencil_front -From dell_blade_server_stencils -MasterName "$front_name"
+              $dell_blade_server_stencil_back  = Register-VisioShape -Name stencil_back  -From dell_blade_server_stencils -MasterName "$back_name"
             }
             "^FS8|^SC" {
-              $dell_sc_storage_stencil_front = Register-VisioShape -Name dell_sc_storage_stencil_front -From dell_sc_storage_stencils -MasterName "$front_name"
-              $dell_sc_storage_stencil_back  = Register-VisioShape -Name dell_sc_storage_stencil_back -From dell_sc_storage_stencils -MasterName "$back_name"
-              $server_stencil_front          = "dell_sc_storage_stencil_front"
-              $server_stencil_back           = "dell_sc_storage_stencil_back"
+              $dell_sc_storage_stencil_front = Register-VisioShape -Name stencil_front -From dell_sc_storage_stencils -MasterName "$front_name"
+              $dell_sc_storage_stencil_back  = Register-VisioShape -Name stencil_back  -From dell_sc_storage_stencils -MasterName "$back_name"
             }
             "^FS7|^PS" {
-              $dell_ps_storage_stencil_front = Register-VisioShape -Name dell_ps_storage_stencil_front -From dell_ps_storage_stencils -MasterName "$front_name"
-              $dell_ps_storage_stencil_back  = Register-VisioShape -Name dell_ps_storage_stencil_back -From dell_ps_storage_stencils -MasterName "$back_name"
-              $server_stencil_front          = "dell_ps_storage_stencil_front"
-              $server_stencil_back           = "dell_ps_storage_stencil_back"
+              $dell_ps_storage_stencil_front = Register-VisioShape -Name stencil_front -From dell_ps_storage_stencils -MasterName "$front_name"
+              $dell_ps_storage_stencil_back  = Register-VisioShape -Name stencil_back  -From dell_ps_storage_stencils -MasterName "$back_name"
             }
             "^D|^MD|^NX" {
-              $dell_md_storage_stencil_front = Register-VisioShape -Name dell_md_storage_stencil_front -From dell_md_storage_stencils -MasterName "$front_name"
-              $dell_md_storage_stencil_back  = Register-VisioShape -Name dell_md_storage_stencil_back -From dell_md_storage_stencils -MasterName "$back_name"
-              $server_stencil_front          = "dell_md_storage_stencil_front"
-              $server_stencil_back           = "dell_md_storage_stencil_back"
+              $dell_md_storage_stencil_front = Register-VisioShape -Name stencil_front -From dell_md_storage_stencils -MasterName "$front_name"
+              $dell_md_storage_stencil_back  = Register-VisioShape -Name stencil_back  -From dell_md_storage_stencils -MasterName "$back_name"
             }
           }
         }
         # Handle Pure arrays
         "Pure" {
-          $front_name                       = "$model front"
-          $back_name                        = "$model back"
-          $pure_storage_array_stencil_front = Register-VisioShape -Name pure_storage_array_stencil_front -From pure_storage_array_stencils -MasterName "$front_name"
-          $pure_storage_array_stencil_back  = Register-VisioShape -Name pure_storage_array_stencil_back -From pure_storage_array_stencils -MasterName "$back_name"
-          $server_stencil_front             = "pure_storage_array_stencil_front"
-          $server_stencil_back              = "pure_storage_array_stencil_back"
+          $front_name = "$model front"
+          $back_name  = "$model back"
+          $pure_storage_array_stencil_front = Register-VisioShape -Name stencil_front -From pure_storage_array_stencils -MasterName "$front_name"
+          $pure_storage_array_stencil_back  = Register-VisioShape -Name stencil_back  -From pure_storage_array_stencils -MasterName "$back_name"
         }
         # Handle Oracle servers
         "Oracle|Sun" {
           $front_name = "$model Front" 
           $back_name  = "$model Rear"
           if ($model -match "Blade") {
-            $oracle_blade_server_stencil_front = Register-VisioShape -Name oracle_blade_server_stencil_front -From oracle_blade_server_stencils -MasterName "$front_name"
-            $oracle_blade_server_stencil_back  = Register-VisioShape -Name oracle_blade_server_stencil_back -From oracle_blade_server_stencils -MasterName "$back_name"
-            $server_stencil_front = "oracle_blade_server_stencil_front"
-            $server_stencil_back  = "oracle_blade_server_stencil_back"
+            $oracle_blade_server_stencil_front = Register-VisioShape -Name stencil_front -From oracle_blade_server_stencils -MasterName "$front_name"
+            $oracle_blade_server_stencil_back  = Register-VisioShape -Name stencil_back  -From oracle_blade_server_stencils -MasterName "$back_name"
           }
           else {
             if ($arch -match "SPARC|sparc") {
-              $oracle_sparc_server_stencil_front = Register-VisioShape -Name oracle_sparc_server_stencil_front -From oracle_sparc_server_stencils -MasterName "$front_name"
-              $oracle_sparc_server_stencil_back  = Register-VisioShape -Name oracle_sparc_server_stencil_back -From oracle_sparc_server_stencils -MasterName "$back_name"
-              $server_stencil_front = "oracle_sparc_server_stencil_front"
-              $server_stencil_back  = "oracle_sparc_server_stencil_back"
+              $oracle_sparc_server_stencil_front = Register-VisioShape -Name stencil_front -From oracle_sparc_server_stencils -MasterName "$front_name"
+              $oracle_sparc_server_stencil_back  = Register-VisioShape -Name stencil_back  -From oracle_sparc_server_stencils -MasterName "$back_name"
             }
             else {
-              $oracle_intel_server_stencil_front = Register-VisioShape -Name oracle_intel_server_stencil_front -From oracle_intel_server_stencils -MasterName "$front_name"
-              $oracle_intel_server_stencil_back  = Register-VisioShape -Name oracle_intel_server_stencil_back -From oracle_intel_server_stencils -MasterName "$back_name"
-              $server_stencil_front = "oracle_intel_server_stencil_front"
-              $server_stencil_back  = "oracle_intel_server_stencil_back"
+              $oracle_intel_server_stencil_front = Register-VisioShape -Name stencil_front -From oracle_intel_server_stencils -MasterName "$front_name"
+              $oracle_intel_server_stencil_back  = Register-VisioShape -Name stencil_back  -From oracle_intel_server_stencils -MasterName "$back_name"
             }
           }
         }
         default {
           $front_name           = "1U Metal Close Out"
           $back_name            = "1U Metal Close Out"
-          $blank_stencil_front  = Register-VisioShape -Name blank_stencil_front -From dell_rack_stencils -MasterName "$front_name"
-          $blank_stencil_back   = Register-VisioShape -Name blank_stencil_back -From dell_rack_stencils -MasterName "$back_name"
-          $server_stencil_front = "blank_stencil_front"
-          $server_stencil_back  = "blank_stencil_back"
+          $blank_stencil_front  = Register-VisioShape -Name stencil_front -From dell_rack_stencils -MasterName "$front_name"
+          $blank_stencil_back   = Register-VisioShape -Name stencil_back  -From dell_rack_stencils -MasterName "$back_name"
         }
       }
       # Place stencils
       $rack_space     = [float]$rus * [float]$ru_space
       $cur_front_ru_y = [float]$front_ru_y + ([float]$top_ru * [float]$ru_space) - $rack_space
       $cur_back_ru_y  = [float]$back_ru_y + ([float]$top_ru * [float]$ru_space) - $rack_space
-      $front_stencil  = New-VisioShape -master "$server_stencil_front" -Label "$hostname" -x $cur_front_ru_x -y $cur_front_ru_y
-      $back_stencil   = New-VisioShape -master "$server_stencil_back" -Label "$hostname" -x $cur_back_ru_x -y $cur_back_ru_y
+      $location_x     = Set-NextShapePosition -x $cur_front_ru_x -y $cur_front_ru_y
+      $shape          = stencil_front stencil
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name SerialNumber $serial
+      $location_x     = Set-NextShapePosition -x $cur_back_ru_x -y $cur_back_ru_y
+      $shape          = stencil_back stencil
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name SerialNumber $serial
     }
   }
   $doc = Complete-VisioDocument -Close

@@ -38,3 +38,5 @@
 # Rewrite to use VisioBot3000 powershell module
 # 0.1.9: Mon  5 Feb 2018 19:57:29 AEDT
 # Improved outputfile handling
+# 1.2.0: Wed  7 Feb 2018 10:36:02 AEDT
+# Updated code to support modifying shape data
