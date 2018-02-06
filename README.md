@@ -134,25 +134,24 @@ Example of a CSV file:
 
 ```
 $ more example.csv
-Hostname,Vendor,Architecture,Model,Rack,Top Rack Unit,Rack Units
-server1,Oracle,SPARC,M3000,A1,2,2
-server2,Oracle,SPARC,M5000,A1,12,10
-server3,Oracle,x86,X2-4,A1,15,3
-disk3,Pure,NA,Disk shelf,A1,17,2
-disk2,Pure,NA,Disk shelf,A1,19,2
-disk1,Pure,NA,Disk shelf,A1,21,2
-disk0,Pure,NA,Disk shelf,A1,23,2
-server4,Pure,NA,FA M70,A1,26,3
-server5,Dell,x86,R820,A1,28,2
-server11,Oracle,SPARC,M3000,A2,2,2
-server12,Oracle,SPARC,M5000,A2,12,10
-server13,Oracle,x86,X2-4,A2,15,3
-disk3,Pure,NA,Disk shelf,A2,17,2
-disk2,Pure,NA,Disk shelf,A2,19,2
-disk1,Pure,NA,Disk shelf,A2,21,2
-disk0,Pure,NA,Disk shelf,A2,23,2
-server14,Pure,NA,FA M70,A2,26,3
-server15,Dell,x86,R820,A2,28,2
+Hostname,Vendor,Architecture,Model,Rack,Top Rack Unit,Rack Units,Serial Number
+server1,Oracle,SPARC,M3000,A1,2,2,12341
+server2,Oracle,SPARC,M5000,A1,12,10,12342
+server3,Oracle,x86,X2-4,A1,15,3,12343
+disk3,Pure,NA,Disk shelf,A1,17,2,12344
+disk2,Pure,NA,Disk shelf,A1,19,2,12345
+disk1,Pure,NA,Disk shelf,A1,21,2,12346
+disk0,Pure,NA,Disk shelf,A1,23,2,12347
+server4,Pure,NA,FA M70,A1,26,3,12348
+server5,Dell,x86,R820,A1,28,2,12349
+server11,Oracle,SPARC,M3000,A2,2,2,12351
+server12,Oracle,SPARC,M5000,A2,12,10,12352
+server13,Oracle,x86,X2-4,A2,15,3,12353
+SH3,Pure,NA,Disk shelf,A2,17,2,12354
+SH2,Pure,NA,Disk shelf,A2,19,2,12355
+SH1,Pure,NA,Disk shelf,A2,21,2,12356
+SH0,Pure,NA,Disk shelf,A2,23,2,12357
+ARRAY1,Pure,NA,FA M70,A2,26,3,12358
 ```
 
 Importing CSV file and creating Visio diagrams:
