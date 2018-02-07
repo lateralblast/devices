@@ -285,14 +285,21 @@ if ($input_file -match "csv$") {
     }
     for ($row = 0; $row -lt $max_rows; $row++) {
       # Get Values from columns
-      $hostname = $cur_rows[$row].Hostname
-      $model    = $cur_rows[$row].Model
-      $top_ru   = $cur_rows[$row]."Top Rack Unit"
-      $vendor   = $cur_rows[$row].Vendor
-      $rack     = $cur_rows[$row].Rack
-      $rus      = $cur_rows[$row]."Rack Units"
-      $arch     = $cur_rows[$row].Architecture
-      $serial   = $cur_rows[$row]."Serial Number"
+      $hostname  = $cur_rows[$row].Hostname
+      $component = $cur_rows[$row].Component
+      $vendor    = $cur_rows[$row].Vendor
+      $arch      = $cur_rows[$row].Architecture
+      $model     = $cur_rows[$row].Model
+      $os        = $cur_rows[$row]."Operating System"
+      $rack      = $cur_rows[$row].Rack
+      $rus       = $cur_rows[$row]."Rack Units"
+      $top_ru    = $cur_rows[$row]."Top Rack Unit"
+      $serial    = $cur_rows[$row]."Serial Number"
+      $asset     = $cur_rows[$row]."Asset Number"
+      $installed = $cur_rows[$row]."Installed Date"
+      $warranty  = $cur_rows[$row]."Warranty Exp"
+      $location  = $cur_rows[$row].Location
+      $country   = $cur_rows[$row].Country
       switch -regex ($vendor) {
         # Handle Dell Servers, Blades and Storage
         "Dell" {
@@ -327,8 +334,20 @@ if ($input_file -match "csv$") {
         }
         # Handle Pure arrays
         "Pure" {
-          $front_name = "$model front"
-          $back_name  = "$model back"
+          switch -regex ($model) {
+            "FB|FlashBlade" {
+              $front_name = "FlashBlade Front Full"
+              $back_name  = "FlashBlade back"
+            }
+            "FA-|M" {
+              $front_name = "FA M70 front"
+              $back_name  = "FA M70 back"
+            }
+            default {
+              $front_name = "$model front"
+              $back_name  = "$model back"
+            }
+          }
           $pure_storage_array_stencil_front = Register-VisioShape -Name stencil_front -From pure_storage_array_stencils -MasterName "$front_name"
           $pure_storage_array_stencil_back  = Register-VisioShape -Name stencil_back  -From pure_storage_array_stencils -MasterName "$back_name"
         }

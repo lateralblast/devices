@@ -1,18 +1,20 @@
-Hostname,Vendor,Architecture,Model,Rack,Top Rack Unit,Rack Units,Serial Number
-server1,Oracle,SPARC,M3000,A1,2,2,12341
-server2,Oracle,SPARC,M5000,A1,12,10,12342
-server3,Oracle,x86,X2-4,A1,15,3,12343
-disk3,Pure,NA,Disk shelf,A1,17,2,12344
-disk2,Pure,NA,Disk shelf,A1,19,2,12345
-disk1,Pure,NA,Disk shelf,A1,21,2,12346
-disk0,Pure,NA,Disk shelf,A1,23,2,12347
-server4,Pure,NA,FA M70,A1,26,3,12348
-server5,Dell,x86,R820,A1,28,2,12349
-server11,Oracle,SPARC,M3000,A2,2,2,12351
-server12,Oracle,SPARC,M5000,A2,12,10,12352
-server13,Oracle,x86,X2-4,A2,15,3,12353
-SH3,Pure,NA,Disk shelf,A2,17,2,12354
-SH2,Pure,NA,Disk shelf,A2,19,2,12355
-SH1,Pure,NA,Disk shelf,A2,21,2,12356
-SH0,Pure,NA,Disk shelf,A2,23,2,12357
-ARRAY1,Pure,NA,FA M70,A2,26,3,12358
+Hostname,Component,Vendor,Architecture,Model,Operating System,Rack,Rack Units,Top Rack Unit,Serial Number,Asset Number,Installed Date,Warranty Exp,Location,Country
+server1,Chassis,Oracle,SPARC,M3000,,A1,2,2,12341,,,,,
+server2,Chassis,Oracle,SPARC,M5000,,A1,10,12,12342,,,,,
+server3,Chassis,Oracle,x86,X2-4,,A1,3,15,12343,,,,,
+array1,SH3,Pure,,Disk shelf,,A1,2,17,12344,,,,,
+array1,SH2,Pure,,Disk shelf,,A1,2,19,12345,,,,,
+array1,SH1,Pure,,Disk shelf,,A1,2,21,12346,,,,,
+array1,SH0,Pure,,Disk shelf,,A1,2,23,12347,,,,,
+array1,CH0,Pure,,FA-m70r2,,A1,3,26,12348,,,,,
+server5,Chassis,Dell,x86,R820,,A1,2,28,12349,,,,,
+flashblade1,CH1,Pure,,FlashBlade,,A1,4,32,123450
+server11,Chassis,Oracle,SPARC,M3000,,A2,2,2,12351,,,,,
+server12,Chassis,Oracle,SPARC,M5000,,A2,10,12,12352,,,,,
+server13,Chassis,Oracle,x86,X2-4,,A2,3,15,12353,,,,,
+array2,SH3,Pure,,Disk shelf,,A2,2,17,12354,,,,,
+array2,SH2,Pure,,Disk shelf,,A2,2,19,12355,,,,,
+array2,SH1,Pure,,Disk shelf,,A2,2,21,12356,,,,,
+array2,SH0,Pure,,Disk shelf,,A2,2,23,12357,,,,,
+array2,CH0,Pure,,FA-m70r2,,A2,3,26,12358,,,,,
+flashblade2,CH1,Pure,,FlashBlade,,A2,4,30,123459

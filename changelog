@@ -40,3 +40,5 @@
 # Improved outputfile handling
 # 1.2.0: Wed  7 Feb 2018 10:36:02 AEDT
 # Updated code to support modifying shape data
+# 1.2.1: Thu  8 Feb 2018 09:12:35 AEDT
+# Updated example and added Pure FlashBlade support
