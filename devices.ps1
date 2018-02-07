@@ -7,7 +7,7 @@ param (
 )
 
 # Name:         Devices
-# Version:      0.2.0
+# Version:      0.2.2
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -384,9 +384,23 @@ if ($input_file -match "csv$") {
       $location_x     = Set-NextShapePosition -x $cur_front_ru_x -y $cur_front_ru_y
       $shape          = stencil_front stencil
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name SerialNumber $serial
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name AssetNumber $asset
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name Location $location
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name InstalledDate $installed
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name WarrantyExp $warranty
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name Room $rack
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name RackUnits $rus
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name OperatingSystem $os
       $location_x     = Set-NextShapePosition -x $cur_back_ru_x -y $cur_back_ru_y
       $shape          = stencil_back stencil
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name SerialNumber $serial
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name AssetNumber $asset
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name Location $location
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name InstalledDate $installed
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name WarrantyExp $warranty
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name Room $rack
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name RackUnits $rus
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name OperatingSystem $os
     }
   }
   $doc = Complete-VisioDocument -Close
