@@ -7,7 +7,7 @@ param (
 )
 
 # Name:         Devices
-# Version:      0.2.2
+# Version:      0.2.3
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -180,6 +180,11 @@ $netapp_vtl_stencils_file          = "$stencil_dir\netapp\NetApp-VTL-Series-clas
 
 $default_rack = "4220 Rack Frame"
 
+# Text defaults
+
+$default_text_size   = "12pt"
+$default_text_colour = "RGB(255, 165, 0)"
+
 # Rack x,y constants
 
 $front_rack_x   = 1.0
@@ -194,6 +199,8 @@ $ru_space       = 0.175
 $cur_rack       = "None"
 
 $visio = New-VisioApplication
+
+$settings = Import-VisioSettings -settings @{HideText=0}
 
 if ($input_file -match "csv$") {
   # Open Visio Document
@@ -264,6 +271,9 @@ if ($input_file -match "csv$") {
     # Place rack front stencil
     $location   = Set-NextShapePosition -x $front_rack_x -y $front_rack_y
     $shape      = rack_stencil rack_front
+    $label      = $shape.Characters.Text="Grid Ref: $rack"
+    $colour     = $shape.Cells("Char.Color").FormulaU = $default_text_colour
+    $colour     = $shape.Cells("Char.Size").FormulaU  = $default_text_size
     $shape_data = Set-VisioShapeData -Shape $rack_front -Name ProductNumber ""
     $shape_data = Set-VisioShapeData -Shape $rack_front -Name Manufacturer ""
     $shape_data = Set-VisioShapeData -Shape $rack_front -Name ProductNumber ""
@@ -272,6 +282,9 @@ if ($input_file -match "csv$") {
     # Place rack back stencil
     $location   = Set-NextShapePosition -x $back_rack_x -y $back_rack_y
     $shape      = rack_stencil rack_back
+    $label      = $shape.Characters.Text="Grid Ref: $rack"
+    $colour     = $shape.Cells("Char.Color").FormulaU = $default_text_colour
+    $colour     = $shape.Cells("Char.Size").FormulaU  = $default_text_size
     $shape_data = Set-VisioShapeData -Shape $rack_back -Name ProductNumber ""
     $shape_data = Set-VisioShapeData -Shape $rack_back -Name Manufacturer ""
     $shape_data = Set-VisioShapeData -Shape $rack_back -Name ProductNumber ""
@@ -300,6 +313,7 @@ if ($input_file -match "csv$") {
       $warranty  = $cur_rows[$row]."Warranty Exp"
       $location  = $cur_rows[$row].Location
       $country   = $cur_rows[$row].Country
+      $info      = "$hostname: $component"
       switch -regex ($vendor) {
         # Handle Dell Servers, Blades and Storage
         "Dell" {
@@ -383,6 +397,9 @@ if ($input_file -match "csv$") {
       $cur_back_ru_y  = [float]$back_ru_y + ([float]$top_ru * [float]$ru_space) - $rack_space
       $location_x     = Set-NextShapePosition -x $cur_front_ru_x -y $cur_front_ru_y
       $shape          = stencil_front stencil
+      $shape_label    = $shape.Characters.Text=$info
+      $text_colour    = $shape.Cells("Char.Color").FormulaU = $default_text_colour
+      $text_size      = $shape.Cells("Char.Size").FormulaU  = $default_text_size
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name SerialNumber $serial
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name AssetNumber $asset
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name Location $location
@@ -391,8 +408,12 @@ if ($input_file -match "csv$") {
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name Room $rack
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name RackUnits $rus
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name OperatingSystem $os
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name SystemName $hostname
       $location_x     = Set-NextShapePosition -x $cur_back_ru_x -y $cur_back_ru_y
       $shape          = stencil_back stencil
+      $shape_label    = $shape.Characters.Text=$info
+      $text_colour    = $shape.Cells("Char.Color").FormulaU = $default_text_colour
+      $text_size      = $shape.Cells("Char.Size").FormulaU  = $default_text_size
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name SerialNumber $serial
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name AssetNumber $asset
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name Location $location
@@ -401,6 +422,7 @@ if ($input_file -match "csv$") {
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name Room $rack
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name RackUnits $rus
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name OperatingSystem $os
+      $shape_data     = Set-VisioShapeData -Shape $stencil -Name SystemName $hostname
     }
   }
   $doc = Complete-VisioDocument -Close
