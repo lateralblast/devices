@@ -46,3 +46,5 @@
 # Example and Shape data updates
 # 0.2.3: Fri  9 Feb 2018 08:12:32 AEDT
 # Fixed shape labels and added additional shape data
+# 0.2.4: Fri  9 Feb 2018 10:59:50 AEDT
+# Added -longrackname switch option to include hostnames in page name and rack name

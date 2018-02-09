@@ -2,12 +2,13 @@ param (
   [switch] $help,
   [switch] $version,
   [switch] $verbose,
+  [switch] $longrackname,
   [string] $inputfile, 
   [string] $outputfile
 )
 
 # Name:         Devices
-# Version:      0.2.3
+# Version:      0.2.4
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -200,13 +201,29 @@ $cur_rack       = "None"
 
 $visio = New-VisioApplication
 
-$settings = Import-VisioSettings -settings @{HideText=0}
-
 if ($input_file -match "csv$") {
   # Open Visio Document
   $new_doc = New-VisioDocument $output_file
   foreach ($rack in $csv_racks) {
-    $new_page = New-VisioPage -Name "$rack"
+    $cur_rows = $csv_rows | Where {$_.Rack -eq "$rack"}
+    if ($longrackname) {
+      $list  = @()
+      $items = $cur_rows | Where {$_.Component -match "CH|Chassis"}
+      $max_items = $items.count
+      if (!($max_items -match "[0-9]")) {
+         $max_items = 1
+      }
+      for ($num = 0; $num -lt $max_items; $num++) {
+        $item = $cur_rows[$num].hostname
+        $list += $item
+      }
+      $hosts     = $list -join ","
+      $rack_name = "$rack ($hosts)"
+    }
+    else {
+      $rack_name = "$rack"
+    }
+    $new_page = New-VisioPage -Name $rack_name
   }
   $remove_page = Remove-VisioPage -Name "Page-1"
   # Setup Rack Stencils
@@ -266,12 +283,35 @@ if ($input_file -match "csv$") {
     $cur_back_ru_x  = $back_ru_x 
     $cur_front_ru_y = $front_ru_y 
     $cur_back_ru_y  = $back_ru_y 
+    # Process rows in CSV for current rack
+    $cur_rows = $csv_rows | Where {$_.Rack -eq "$rack"}
+    $max_rows = $cur_rows.count
+    if (!($max_rows -match "[0-9]")) {
+       $max_rows = 1
+    }
+    if ($longrackname) {
+      $list  = @()
+      $items = $cur_rows | Where {$_.Component -match "CH|Chassis"}
+      $max_items = $items.count
+      if (!($max_items -match "[0-9]")) {
+         $max_items = 1
+      }
+      for ($num = 0; $num -lt $max_items; $num++) {
+        $item = $cur_rows[$num].hostname
+        $list += $item
+      }
+      $hosts     = $list -join ","
+      $rack_name = "$rack ($hosts)"
+    }
+    else {
+      $rack_name = "$rack"
+    }
     # Select Rack Page
-    $page = Set-VisioPage "$rack" 
+    $page = Set-VisioPage $rack_name
     # Place rack front stencil
     $location   = Set-NextShapePosition -x $front_rack_x -y $front_rack_y
     $shape      = rack_stencil rack_front
-    $label      = $shape.Characters.Text="Grid Ref: $rack"
+    $label      = $shape.Characters.Text=$rack_name
     $colour     = $shape.Cells("Char.Color").FormulaU = $default_text_colour
     $colour     = $shape.Cells("Char.Size").FormulaU  = $default_text_size
     $shape_data = Set-VisioShapeData -Shape $rack_front -Name ProductNumber ""
@@ -282,7 +322,7 @@ if ($input_file -match "csv$") {
     # Place rack back stencil
     $location   = Set-NextShapePosition -x $back_rack_x -y $back_rack_y
     $shape      = rack_stencil rack_back
-    $label      = $shape.Characters.Text="Grid Ref: $rack"
+    $label      = $shape.Characters.Text=$rack_name
     $colour     = $shape.Cells("Char.Color").FormulaU = $default_text_colour
     $colour     = $shape.Cells("Char.Size").FormulaU  = $default_text_size
     $shape_data = Set-VisioShapeData -Shape $rack_back -Name ProductNumber ""
@@ -290,12 +330,7 @@ if ($input_file -match "csv$") {
     $shape_data = Set-VisioShapeData -Shape $rack_back -Name ProductNumber ""
     $shape_data = Set-VisioShapeData -Shape $rack_back -Name PartNumber ""
     $shape_data = Set-VisioShapeData -Shape $rack_back -Name ProductDescription ""
-    # Process rows in CSV for current rack
-    $cur_rows = $csv_rows | Where {$_.Rack -eq "$rack"}
-    $max_rows = $cur_rows.count
-    if (!($max_rows -match "[0-9]")) {
-       $max_rows = 1
-    }
+    # Set through rows on current rack
     for ($row = 0; $row -lt $max_rows; $row++) {
       # Get Values from columns
       $hostname  = $cur_rows[$row].Hostname
@@ -313,7 +348,8 @@ if ($input_file -match "csv$") {
       $warranty  = $cur_rows[$row]."Warranty Exp"
       $location  = $cur_rows[$row].Location
       $country   = $cur_rows[$row].Country
-      $info      = "$hostname: $component"
+      $info      = "$hostname"+": $component"
+      # Handle Vendor to help chose shapes
       switch -regex ($vendor) {
         # Handle Dell Servers, Blades and Storage
         "Dell" {
