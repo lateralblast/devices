@@ -48,3 +48,5 @@
 # Fixed shape labels and added additional shape data
 # 0.2.4: Fri  9 Feb 2018 10:59:50 AEDT
 # Added -longrackname switch option to include hostnames in page name and rack name
+# 0.2.5: Fri  9 Feb 2018 17:02:45 AEDT
+# Fixed calls to code to unzip stencils
