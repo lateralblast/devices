@@ -1,5 +1,3 @@
-![alt tag](https://raw.githubusercontent.com/lateralblast/devices/master/devices.jpg)
-
 DEVICES
 =======
 
