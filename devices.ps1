@@ -9,7 +9,7 @@ param (
 )
 
 # Name:         Devices
-# Version:      0.2.6
+# Version:      0.2.7
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -456,10 +456,11 @@ if ($input_file -match "csv$") {
           $blank_stencil_back   = Register-VisioShape -Name stencil_back  -From dell_rack_stencils -MasterName "$back_name"
         }
       }
-      # Place stencils
+      # Calculate shape position
       $rack_space     = [float]$rus * [float]$ru_space
       $cur_front_ru_y = [float]$front_ru_y + ([float]$top_ru * [float]$ru_space) - $rack_space
       $cur_back_ru_y  = [float]$back_ru_y + ([float]$top_ru * [float]$ru_space) - $rack_space
+      # Place front shape
       $location_x     = Set-NextShapePosition -x $cur_front_ru_x -y $cur_front_ru_y
       $shape          = stencil_front stencil
       $shape_label    = $shape.Characters.Text=$info
@@ -469,6 +470,7 @@ if ($input_file -match "csv$") {
       $text_y_pos     = $shape.Cells("TxtLocPinY").FormulaU = $default_text_y_pos
       $text_back      = $shape.Cells("TextBkgnd").FormulaU  = $default_back_colour
       $text_hidden    = $shape.Cells("HideText").FormulaU   = $default_text_hidden
+      $shape_pos      = $shape.BringToFront()
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name SerialNumber $serial
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name AssetNumber $asset
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name Location $location
@@ -479,6 +481,7 @@ if ($input_file -match "csv$") {
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name OperatingSystem $os
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name SystemName $hostname
       $location_x     = Set-NextShapePosition -x $cur_back_ru_x -y $cur_back_ru_y
+      # Place back shape
       $shape          = stencil_back stencil
       $shape_label    = $shape.Characters.Text=$info
       $text_colour    = $shape.Cells("Char.Color").FormulaU = $default_text_colour
@@ -487,6 +490,7 @@ if ($input_file -match "csv$") {
       $text_y_pos     = $shape.Cells("TxtLocPinY").FormulaU = $default_text_y_pos
       $text_back      = $shape.Cells("TextBkgnd").FormulaU  = $default_back_colour
       $text_hidden    = $shape.Cells("HideText").FormulaU   = $default_text_hidden
+      $shape_pos      = $shape.BringToFront()
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name SerialNumber $serial
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name AssetNumber $asset
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name Location $location
