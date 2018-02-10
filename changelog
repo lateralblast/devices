@@ -50,3 +50,5 @@
 # Added -longrackname switch option to include hostnames in page name and rack name
 # 0.2.5: Fri  9 Feb 2018 17:02:45 AEDT
 # Fixed calls to code to unzip stencils
+# 0.2.6: Sat 10 Feb 2018 15:01:18 AEDT
+# Added code to show labels on stencils

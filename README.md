@@ -25,8 +25,6 @@ At the moment the script is a proof of concept. It has support for a number of v
 
 Things to do:
 
-- Better determination of stencils names
-- Expand capability of adding asset and serial information to stencils that are put on page
 - Excel import support
 
 Background
@@ -128,6 +126,8 @@ usage: devices.ps1
 --version
 --inputfile  FILENAME
 --outputfile FILENAME
+--longracknames
+--showlabels
 ```
 
 Example of a CSV file:
