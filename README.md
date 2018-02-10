@@ -44,7 +44,7 @@ I have rewritten the script to utilise this powershell module.
 Output
 ------
 
-Example output (JPG of Visio Document):
+Example output (JPG of Visio Document) with visible stencil labels (-showlabels) and long rack names (-longrackname):
 
 ![alt tag](https://raw.githubusercontent.com/lateralblast/devices/master/rack.jpg)
 
