@@ -126,6 +126,7 @@ usage: devices.ps1
 --outputfile FILENAME
 --longracknames
 --showlabels
+--rackperfile
 ```
 
 Example of a CSV file:

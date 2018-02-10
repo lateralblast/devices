@@ -2,14 +2,15 @@ param (
   [switch] $help,
   [switch] $version,
   [switch] $verbose,
-  [switch] $longrackname,
+  [switch] $longracknames,
   [switch] $showlabels,
+  [switch] $rackperfile,
   [string] $inputfile, 
   [string] $outputfile
 )
 
 # Name:         Devices
-# Version:      0.2.7
+# Version:      0.2.8
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -64,8 +65,9 @@ function print_help($script_name) {
   Write-Host "--version"
   Write-Host "--inputfile  FILENAME"
   Write-Host "--outputfile FILENAME"
-  Write-Host "--longrackname"
+  Write-Host "--longracknames"
   Write-Host "--showlabels"
+  Write-Host "--rackperfile"
   return
 }
 
@@ -127,9 +129,11 @@ if ($outputfile) {
   }
 }
 else {
-  Write-Host "Output file not specified"
-  print_help($script_name)
-  exit
+  if (!($rackperfile)) {
+    Write-Host "Output file not specified"
+    print_help($script_name)
+    exit
+  }
 }
 
 # Get file type
@@ -195,6 +199,9 @@ $default_text_x_pos  = "Width * 0.5"
 if ($showlabels) {
   $default_text_hidden = "FALSE"
 }
+else {
+  $default_text_hidden = "TRUE"
+}
 
 # Rack x,y constants
 
@@ -209,93 +216,33 @@ $back_ru_y      = 2.13
 $ru_space       = 0.175
 $cur_rack       = "None"
 
-$visio = New-VisioApplication
 
 if ($input_file -match "csv$") {
+  $load_stencil = 1
   # Open Visio Document
-  $new_doc = New-VisioDocument $output_file
-  foreach ($rack in $csv_racks) {
-    $cur_rows = $csv_rows | Where {$_.Rack -eq "$rack"}
-    if ($longrackname) {
-      $list  = @()
-      $items = $cur_rows | Where {$_.Component -match "CH|Chassis"}
-      $max_items = $items.count
-      if (!($max_items -match "[0-9]")) {
-         $max_items = 1
+  if (!($rackperfile)) {
+    $visio   = New-VisioApplication
+    $new_doc = New-VisioDocument $output_file
+    foreach ($rack in $csv_racks) {
+      $cur_rows = $csv_rows | Where {$_.Rack -eq "$rack"}
+      if ($longracknames) {
+        $list  = @()
+        $items = $cur_rows | Where {$_.Component -match "CH|Chassis"}
+        $max_items = $items.count
+        if (!($max_items -match "[0-9]")) {
+           $max_items = 1
+        }
+        for ($num = 0; $num -lt $max_items; $num++) {
+          $item = $items[$num].hostname
+          $list += $item
+        }
+        $hosts     = $list -join ","
+        $rack_name = "$rack ($hosts)"
       }
-      for ($num = 0; $num -lt $max_items; $num++) {
-        $item = $cur_rows[$num].hostname
-        $list += $item
+      else {
+        $rack_name = "$rack"
       }
-      $hosts     = $list -join ","
-      $rack_name = "$rack ($hosts)"
-    }
-    else {
-      $rack_name = "$rack"
-    }
-    $new_page = New-VisioPage -Name $rack_name
-  }
-  $remove_page = Remove-VisioPage -Name "Page-1"
-  # Setup Rack Stencils
-  # Dell has a good default rack stencil
-  unzip_stencil($dell_rack_stencils_file)
-  $dell_rack_stencils = Register-VisioStencil -Name dell_rack_stencils -Path $dell_rack_stencils_file 
-  $rack_stencil       = Register-VisioShape -Name rack_stencil -From dell_rack_stencils -MasterName "$default_rack"
-  # Check for vendors
-  $pure_rows = $csv_rows | Where {$_.Vendor -match "Pure"}
-  if ($pure_rows) {
-    unzip_stencil($pure_storage_array_stencils_file)
-    $pure_storage_array_stencils = Register-VisioStencil -Name pure_storage_array_stencils -Path $pure_storage_array_stencils_file 
-  }
-  $dell_rows = $csv_rows | Where {$_.Vendor -match "Dell"}
-  if ($dell_rows) {
-    $model_test = $dell_rows | Where {$_.Model -match "^CX4|^NX4|^ES|^DD"}
-    if ($model_test -match "[A-Z]") {
-      unzip_stencil($dell_emc_storage_stencils_file)
-      $dell_emc_storage_stencils = Register-VisioStencil -Name dell_emc_storage_stencils  $dell_emc_storage_stencils_file
-    }
-    $model_test = $dell_rows | Where {$_.Model -match "^R|^C"}
-    if ($model_test -match "[A-Z]") {
-      unzip_stencil($dell_rack_server_stencils_file)
-      $dell_rack_server_stencils = Register-VisioStencil -Name dell_rack_server_stencils $dell_rack_server_stencils_file
-    }
-    $model_test = $dell_rows | Where {$_.Model -match "^M[0-9]"}
-    if ($model_test -match "[A-Z]") {
-      unzip_stencil($dell_blade_server_stencils_file)
-      $dell_blade_server_stencils = Register-VisioStencil -Name dell_blade_server_stencils $dell_blade_server_stencils_file
-    }
-    $model_test = $dell_rows | Where {$_.Model -match "^FS8|^SC"}
-    if ($model_test -match "[A-Z]") {
-      unzip_stencil($dell_sc_storage_stencils_file)
-      $dell_sc_storage_stencils = Register-VisioStencil -Name dell_sc_storage_stencils $dell_sc_storage_stencils_file
-    }
-    $model_test = $dell_rows | Where {$_.Model -match "^FS7|^PS"}
-    if ($model_test -match "[A-Z]") {
-      unzip_stencil($dell_ps_storage_stencils_file)
-      $dell_ps_storage_stencils = Register-VisioStencil -Name dell_ps_storage_stencils $dell_ps_storage_stencils_file
-    }
-    $model_test = $dell_rows | Where {$_.Model -match "^D|^MD|^NX"}
-    if ($model_test -match "[A-Z]") {
-      unzip_stencil($dell_md_storage_stencils_file)
-      $dell_md_storage_stencils = Register-VisioStencil -Name dell_md_storage_stencils $dell_md_storage_stencils_file
-    }
-  }
-  $sun_rows = $csv_rows | Where {$_.Vendor -match "Oracle|Sun"}
-  if ($sun_rows) {
-    $model_test = $sun_rows | Where {$_.Model -match "Blade|^B[0-9]"}
-    if ($model_test -match "[A-Z]") {
-      unzip_stencil($oracle_blade_server_stencils_file)
-      $oracle_blade_server_stencils = Register-VisioStencil -Name oracle_blade_server_stencils $oracle_blade_server_stencils_file 
-    }
-    $model_test = $sun_rows | Where {$_.Model -match "SPARC|sparc|^T[0-9]|^M[0-9]|^E[0-9]"}
-    if ($model_test -match "[A-Z]") {
-      unzip_stencil($oracle_sparc_server_stencils_file)
-      $oracle_sparc_server_stencils = Register-VisioStencil -Name oracle_sparc_server_stencils $oracle_sparc_server_stencils_file 
-    }
-    $model_test = $sun_rows | Where {$_.Model -match "X64|X86|x64|x86|i386|^X[0-9]"}
-    if ($model_test -match "[A-Z]") {
-      unzip_stencil($oracle_intel_server_stencils_file)
-      $oracle_intel_server_stencils = Register-VisioStencil -Name oracle_intel_server_stencils $oracle_intel_server_stencils_file 
+      $new_page = New-VisioPage -Name $rack_name
     }
   }
   foreach ($rack in $csv_racks) {
@@ -310,7 +257,7 @@ if ($input_file -match "csv$") {
     if (!($max_rows -match "[0-9]")) {
        $max_rows = 1
     }
-    if ($longrackname) {
+    if ($longracknames) {
       $list  = @()
       $items = $cur_rows | Where {$_.Component -match "CH|Chassis"}
       $max_items = $items.count
@@ -318,7 +265,7 @@ if ($input_file -match "csv$") {
          $max_items = 1
       }
       for ($num = 0; $num -lt $max_items; $num++) {
-        $item = $cur_rows[$num].hostname
+        $item = $items[$num].hostname
         $list += $item
       }
       $hosts     = $list -join ","
@@ -328,7 +275,80 @@ if ($input_file -match "csv$") {
       $rack_name = "$rack"
     }
     # Select Rack Page
+    if ($rackperfile) {
+      $visio       = New-VisioApplication
+      $output_file = "$output_dir\$rack_name.vsd"
+      $new_doc     = New-VisioDocument $output_file
+      $new_page    = New-VisioPage -Name $rack_name
+    }
     $page = Set-VisioPage $rack_name
+    if ($load_stencil -eq 1) {
+      # Setup Rack Stencils
+      # Dell has a good default rack stencil
+      unzip_stencil($dell_rack_stencils_file)
+      $dell_rack_stencils = Register-VisioStencil -Name dell_rack_stencils -Path $dell_rack_stencils_file 
+      $rack_stencil       = Register-VisioShape -Name rack_stencil -From dell_rack_stencils -MasterName "$default_rack"
+      # Check for vendors
+      $pure_rows = $cur_rows | Where {$_.Vendor -match "Pure"}
+      if ($pure_rows) {
+        unzip_stencil($pure_storage_array_stencils_file)
+        $pure_storage_array_stencils = Register-VisioStencil -Name pure_storage_array_stencils -Path $pure_storage_array_stencils_file 
+      }
+      $dell_rows = $cur_rows | Where {$_.Vendor -match "Dell"}
+      if ($dell_rows) {
+        $model_test = $dell_rows | Where {$_.Model -match "^CX4|^NX4|^ES|^DD"}
+        if ($model_test -match "[A-Z]") {
+          unzip_stencil($dell_emc_storage_stencils_file)
+          $dell_emc_storage_stencils = Register-VisioStencil -Name dell_emc_storage_stencils  $dell_emc_storage_stencils_file
+        }
+        $model_test = $dell_rows | Where {$_.Model -match "^R|^C"}
+        if ($model_test -match "[A-Z]") {
+          unzip_stencil($dell_rack_server_stencils_file)
+          $dell_rack_server_stencils = Register-VisioStencil -Name dell_rack_server_stencils $dell_rack_server_stencils_file
+        }
+        $model_test = $dell_rows | Where {$_.Model -match "^M[0-9]"}
+        if ($model_test -match "[A-Z]") {
+          unzip_stencil($dell_blade_server_stencils_file)
+          $dell_blade_server_stencils = Register-VisioStencil -Name dell_blade_server_stencils $dell_blade_server_stencils_file
+        }
+        $model_test = $dell_rows | Where {$_.Model -match "^FS8|^SC"}
+        if ($model_test -match "[A-Z]") {
+          unzip_stencil($dell_sc_storage_stencils_file)
+          $dell_sc_storage_stencils = Register-VisioStencil -Name dell_sc_storage_stencils $dell_sc_storage_stencils_file
+        }
+        $model_test = $dell_rows | Where {$_.Model -match "^FS7|^PS"}
+        if ($model_test -match "[A-Z]") {
+          unzip_stencil($dell_ps_storage_stencils_file)
+          $dell_ps_storage_stencils = Register-VisioStencil -Name dell_ps_storage_stencils $dell_ps_storage_stencils_file
+        }
+        $model_test = $dell_rows | Where {$_.Model -match "^D|^MD|^NX"}
+        if ($model_test -match "[A-Z]") {
+          unzip_stencil($dell_md_storage_stencils_file)
+          $dell_md_storage_stencils = Register-VisioStencil -Name dell_md_storage_stencils $dell_md_storage_stencils_file
+        }
+      }
+      $sun_rows = $cur_rows | Where {$_.Vendor -match "Oracle|Sun"}
+      if ($sun_rows) {
+        $model_test = $sun_rows | Where {$_.Model -match "Blade|^B[0-9]"}
+        if ($model_test -match "[A-Z]") {
+          unzip_stencil($oracle_blade_server_stencils_file)
+          $oracle_blade_server_stencils = Register-VisioStencil -Name oracle_blade_server_stencils $oracle_blade_server_stencils_file 
+        }
+        $model_test = $sun_rows | Where {$_.Model -match "SPARC|sparc|^T[0-9]|^M[0-9]|^E[0-9]"}
+        if ($model_test -match "[A-Z]") {
+          unzip_stencil($oracle_sparc_server_stencils_file)
+          $oracle_sparc_server_stencils = Register-VisioStencil -Name oracle_sparc_server_stencils $oracle_sparc_server_stencils_file 
+        }
+        $model_test = $sun_rows | Where {$_.Model -match "X64|X86|x64|x86|i386|^X[0-9]"}
+        if ($model_test -match "[A-Z]") {
+          unzip_stencil($oracle_intel_server_stencils_file)
+          $oracle_intel_server_stencils = Register-VisioStencil -Name oracle_intel_server_stencils $oracle_intel_server_stencils_file 
+        }
+      }
+      if (!($rackperfile)) {
+        $load_stencil = 0
+      }
+    }
     # Place rack front stencil
     $location    = Set-NextShapePosition -x $front_rack_x -y $front_rack_y
     $shape       = rack_stencil rack_front
@@ -501,6 +521,13 @@ if ($input_file -match "csv$") {
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name OperatingSystem $os
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name SystemName $hostname
     }
+    if ($rackperfile) {
+      $remove_page = Remove-VisioPage -Name "Page-1"
+      $save_doc    = Complete-VisioDocument -Close
+    }
   }
-  $doc = Complete-VisioDocument -Close
+  if (!($rackperfile)) {
+    $remove_page = Remove-VisioPage -Name "Page-1"
+    $save_doc    = Complete-VisioDocument -Close
+  }
 }
