@@ -373,10 +373,8 @@ if ($input_file -match "csv$") {
       # Put a label on the page so it will appear when output to PDF
       $rectangle    = Register-VisioShape -Name rectangle -From basic_shapes_stencils -MasterName "Rectangle"
       $characters   = $rack_name | measure-object -character | select -expandproperty characters
-      #$label_x_pos  = $default_page_label_x_pos - $characters/22
       $shape_pos    = Set-NextShapePosition -x $default_page_label_x_pos -y $default_page_label_y_pos
       $shape        = rectangle rack_label
-#      $shape_size   = $shape.Resize(7, 2, 2)
       $shape_height = $shape.Cells("Height") = $default_page_label_height
       $shape_width  = $shape.Cells("Width")  = $default_page_label_width
       $label        = $shape.Characters.Text = $rack_name
@@ -385,7 +383,6 @@ if ($input_file -match "csv$") {
       $text_size    = $shape.Cells("Char.Size").FormulaU  = $default_page_label_text_size
       $text_hidden  = $shape.Cells("HideText").FormulaU   = $default_text_hidden
     }
-    exit
     # Place rack front stencil
     $shape_pos   = Set-NextShapePosition -x $front_rack_x -y $front_rack_y
     $shape       = rack_stencil rack_front
