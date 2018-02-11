@@ -1,7 +1,7 @@
 DEVICES
 =======
 
-Diagram Export in Visio from CSV and Excel and other Sources
+Diagram Export in Visio from CSV (and in the future Excel and other Sources)
 
 License
 -------
