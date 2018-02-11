@@ -11,7 +11,7 @@ param (
 )
 
 # Name:         Devices
-# Version:      0.2.9
+# Version:      0.3.0
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -201,8 +201,10 @@ $default_text_x_pos  = "Width * 0.5"
 
 # Page label defaults
 
-$default_page_label_x_pos      = 4.0
+$default_page_label_x_pos      = 4.25
 $default_page_label_y_pos      = 11.0
+$default_page_label_height     = 0.5
+$default_page_label_width      = 7.5
 $default_page_label_box_colour = "RGB(255, 255, 255)"
 $default_page_label_text_style = "1"
 $default_page_label_text_size  = "16pt"
@@ -371,17 +373,19 @@ if ($input_file -match "csv$") {
       # Put a label on the page so it will appear when output to PDF
       $rectangle    = Register-VisioShape -Name rectangle -From basic_shapes_stencils -MasterName "Rectangle"
       $characters   = $rack_name | measure-object -character | select -expandproperty characters
-      $label_x_pos  = $default_page_label_x_pos - $characters/22
-      $shape_pos    = Set-NextShapePosition -x $label_x_pos -y $default_page_label_y_pos
+      #$label_x_pos  = $default_page_label_x_pos - $characters/22
+      $shape_pos    = Set-NextShapePosition -x $default_page_label_x_pos -y $default_page_label_y_pos
       $shape        = rectangle rack_label
-      $shape_height = $shape.Cells("Height") = 0.5
-      $shape_size   = $shape.Resize(0, 5, 1)
+#      $shape_size   = $shape.Resize(7, 2, 2)
+      $shape_height = $shape.Cells("Height") = $default_page_label_height
+      $shape_width  = $shape.Cells("Width")  = $default_page_label_width
       $label        = $shape.Characters.Text = $rack_name
       $shape_colour = $shape.Cells("LineColor").FormulaU  = $default_page_label_box_colour
       $text_style   = $shape.Cells("Char.Style").FormulaU = $default_page_label_text_style
       $text_size    = $shape.Cells("Char.Size").FormulaU  = $default_page_label_text_size
       $text_hidden  = $shape.Cells("HideText").FormulaU   = $default_text_hidden
     }
+    exit
     # Place rack front stencil
     $shape_pos   = Set-NextShapePosition -x $front_rack_x -y $front_rack_y
     $shape       = rack_stencil rack_front

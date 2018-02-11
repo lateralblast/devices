@@ -58,3 +58,5 @@
 # Added additional examples and code to output a file per rack
 # 0.2.9: Sun 11 Feb 2018 15:13:56 AEDT
 # Added -pagelables switch to put rack label on top of page
+# 0.3.0: Sun 11 Feb 2018 17:16:24 AEDT
+# Improved page label handling
