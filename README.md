@@ -127,6 +127,7 @@ usage: devices.ps1
 --longracknames
 --showlabels
 --rackperfile
+--pagelabels
 ```
 
 Example of a CSV file:

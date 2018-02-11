@@ -4,13 +4,14 @@ param (
   [switch] $verbose,
   [switch] $longracknames,
   [switch] $showlabels,
+  [switch] $pagelabels,
   [switch] $rackperfile,
   [string] $inputfile, 
   [string] $outputfile
 )
 
 # Name:         Devices
-# Version:      0.2.8
+# Version:      0.2.9
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -68,6 +69,7 @@ function print_help($script_name) {
   Write-Host "--longracknames"
   Write-Host "--showlabels"
   Write-Host "--rackperfile"
+  Write-Host "--pagelabels"
   return
 }
 
@@ -159,6 +161,7 @@ $csv_racks = $csv_rows.Rack | Select-Object -Unique
 
 # Set up some global stencil files
 
+$basic_shapes_stencils_file        = "BASIC_U.VSSX"
 $oracle_sparc_server_stencils_file = "$stencil_dir\oracle\Oracle-Server-SPARC.vss"
 $oracle_intel_server_stencils_file = "$stencil_dir\oracle\Oracle-Server-x86.vss"
 $oracle_blade_server_stencils_file = "$stencil_dir\oracle\Oracle-Server-Blade.vss"
@@ -196,6 +199,14 @@ $default_back_colour = "RGB(255, 255, 255)"
 $default_text_y_pos  = "Height * 0.5"
 $default_text_x_pos  = "Width * 0.5"
 
+# Page label defaults
+
+$default_page_label_x_pos      = 4.0
+$default_page_label_y_pos      = 11.0
+$default_page_label_box_colour = "RGB(255, 255, 255)"
+$default_page_label_text_style = "1"
+$default_page_label_text_size  = "16pt"
+
 if ($showlabels) {
   $default_text_hidden = "FALSE"
 }
@@ -216,6 +227,7 @@ $back_ru_y      = 2.13
 $ru_space       = 0.175
 $cur_rack       = "None"
 
+# Process CSV
 
 if ($input_file -match "csv$") {
   $load_stencil = 1
@@ -282,7 +294,13 @@ if ($input_file -match "csv$") {
       $new_page    = New-VisioPage -Name $rack_name
     }
     $page = Set-VisioPage $rack_name
+    if ($pagelabels) {
+
+    }
     if ($load_stencil -eq 1) {
+      if ($pagelabels) {
+        $basic_shapes_stencils = Register-VisioStencil -Name basic_shapes_stencils $basic_shapes_stencils_file
+      }
       # Setup Rack Stencils
       # Dell has a good default rack stencil
       unzip_stencil($dell_rack_stencils_file)
@@ -349,10 +367,25 @@ if ($input_file -match "csv$") {
         $load_stencil = 0
       }
     }
+    if ($pagelabels) {
+      # Put a label on the page so it will appear when output to PDF
+      $rectangle    = Register-VisioShape -Name rectangle -From basic_shapes_stencils -MasterName "Rectangle"
+      $characters   = $rack_name | measure-object -character | select -expandproperty characters
+      $label_x_pos  = $default_page_label_x_pos - $characters/22
+      $shape_pos    = Set-NextShapePosition -x $label_x_pos -y $default_page_label_y_pos
+      $shape        = rectangle rack_label
+      $shape_height = $shape.Cells("Height") = 0.5
+      $shape_size   = $shape.Resize(0, 5, 1)
+      $label        = $shape.Characters.Text = $rack_name
+      $shape_colour = $shape.Cells("LineColor").FormulaU  = $default_page_label_box_colour
+      $text_style   = $shape.Cells("Char.Style").FormulaU = $default_page_label_text_style
+      $text_size    = $shape.Cells("Char.Size").FormulaU  = $default_page_label_text_size
+      $text_hidden  = $shape.Cells("HideText").FormulaU   = $default_text_hidden
+    }
     # Place rack front stencil
-    $location    = Set-NextShapePosition -x $front_rack_x -y $front_rack_y
+    $shape_pos   = Set-NextShapePosition -x $front_rack_x -y $front_rack_y
     $shape       = rack_stencil rack_front
-    $label       = $shape.Characters.Text=$rack_name
+    $label       = $shape.Characters.Text = $rack_name
     $text_colour = $shape.Cells("Char.Color").FormulaU = $default_text_colour
     $text_size   = $shape.Cells("Char.Size").FormulaU  = $default_text_size
     $text_x_pos  = $shape.Cells("TxtLocPinX").FormulaU = $default_text_x_pos
@@ -365,9 +398,9 @@ if ($input_file -match "csv$") {
     $shape_data  = Set-VisioShapeData -Shape $rack_front -Name PartNumber ""
     $shape_data  = Set-VisioShapeData -Shape $rack_front -Name ProductDescription ""
     # Place rack back stencil
-    $location    = Set-NextShapePosition -x $back_rack_x -y $back_rack_y
+    $shape_pos   = Set-NextShapePosition -x $back_rack_x -y $back_rack_y
     $shape       = rack_stencil rack_back
-    $label       = $shape.Characters.Text=$rack_name
+    $label       = $shape.Characters.Text = $rack_name
     $text_colour = $shape.Cells("Char.Color").FormulaU = $default_text_colour
     $text_size   = $shape.Cells("Char.Size").FormulaU  = $default_text_size
     $text_x_pos  = $shape.Cells("TxtLocPinX").FormulaU = $default_text_x_pos
@@ -481,9 +514,9 @@ if ($input_file -match "csv$") {
       $cur_front_ru_y = [float]$front_ru_y + ([float]$top_ru * [float]$ru_space) - $rack_space
       $cur_back_ru_y  = [float]$back_ru_y + ([float]$top_ru * [float]$ru_space) - $rack_space
       # Place front shape
-      $location_x     = Set-NextShapePosition -x $cur_front_ru_x -y $cur_front_ru_y
+      $shape_pos      = Set-NextShapePosition -x $cur_front_ru_x -y $cur_front_ru_y
       $shape          = stencil_front stencil
-      $shape_label    = $shape.Characters.Text=$info
+      $shape_label    = $shape.Characters.Text = $info
       $text_colour    = $shape.Cells("Char.Color").FormulaU = $default_text_colour
       $text_size      = $shape.Cells("Char.Size").FormulaU  = $default_text_size
       $text_x_pos     = $shape.Cells("TxtLocPinX").FormulaU = $default_text_x_pos
@@ -500,10 +533,10 @@ if ($input_file -match "csv$") {
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name RackUnits $rus
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name OperatingSystem $os
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name SystemName $hostname
-      $location_x     = Set-NextShapePosition -x $cur_back_ru_x -y $cur_back_ru_y
       # Place back shape
+      $shape_pos      = Set-NextShapePosition -x $cur_back_ru_x -y $cur_back_ru_y
       $shape          = stencil_back stencil
-      $shape_label    = $shape.Characters.Text=$info
+      $shape_label    = $shape.Characters.Text = $info
       $text_colour    = $shape.Cells("Char.Color").FormulaU = $default_text_colour
       $text_size      = $shape.Cells("Char.Size").FormulaU  = $default_text_size
       $text_x_pos     = $shape.Cells("TxtLocPinX").FormulaU = $default_text_x_pos
