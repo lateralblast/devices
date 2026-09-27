@@ -1,14 +1,16 @@
 DEVICES
 =======
 
+Version: 0.3.0
+
 Diagram Export in Visio from CSV (and in the future Excel and other Sources)
 
 License
 -------
 
-This software is licensed as CC-BA (Creative Commons By Attrbution)
+This software is licensed as CC BY-NC-SA (Creative Commons Attribution-NonCommercial-ShareAlike)
 
-http://creativecommons.org/licenses/by/4.0/legalcode
+http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 
 Introduction
 ------------
