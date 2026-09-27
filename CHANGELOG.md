@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-09-27
+
+### Fixed
+- Vendor stencils were only registered based on the first rack's rows in single-document mode, so a later rack
+  introducing a vendor/model not present in the first rack would fail to place its shape. Stencil registration is
+  now tracked per stencil instead of gated by a single one-shot flag.
+- The Dell model dispatch had no fallback case, so a Dell row with an unrecognized model prefix silently reused
+  whatever shape had last been registered under the same name (potentially from a different vendor's row) instead
+  of falling back to a blank plate.
+- `get_file_type` computed the MIME type of the running script instead of the input file, so Excel-format detection
+  never reflected the actual input file.
+
 ## [0.3.0] - 2018-02-11
 
 ### Changed
