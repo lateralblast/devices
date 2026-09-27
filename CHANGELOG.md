@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Factored the repeated shape text/formatting block (label text, `Char.Color`, `Char.Size`, `TxtLocPinX/Y`,
   `TextBkgnd`, `HideText`), previously duplicated four times across the rack front/back and device front/back
   placement code, into a single `Set-ShapeDefaults` helper function.
+- Commented out the unused `$script_path` and `$data_dir` variable assignments.
 
 ## [0.3.2] - 2026-09-27
 

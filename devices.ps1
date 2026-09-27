@@ -30,11 +30,11 @@ Import-Module VisioBot3000 -Force
 # Script glabal vars
 
 $script_name = $MyInvocation.MyCommand.Name
-$script_path = $MyInvocation.MyCommand.Path
+# $script_path = $MyInvocation.MyCommand.Path
 $script_file = $MyInvocation.MyCommand
 $script_dir  = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 $script_vers = ""
-$data_dir    = "$script_dir\data"
+# $data_dir    = "$script_dir\data"
 $stencil_dir = "$script_dir\stencils"
 $output_dir  = "$script_dir\output"
 
