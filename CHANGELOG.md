@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2026-09-27
+
+### Fixed
+- Rack names taken directly from the CSV `Rack` column could contain characters invalid in Windows filenames
+  (`/ \ : * ? " < > |`); `-rackperfile` now sanitizes them before building the output filename (the Visio page
+  name itself is left unsanitized).
+- `-outputfile` path detection used to check for a literal `:` to decide whether a path was absolute, which
+  misclassified UNC paths (`\\server\share\...`) as relative. Now uses `[System.IO.Path]::IsPathRooted`.
+- Missing vendor stencil files (and no `.zip` to extract them from) previously failed with a raw COM error from
+  deep inside `unzip_stencil`. Now fails with a clear message pointing at the README's stencil-sourcing docs.
+
 ## [0.3.1] - 2026-09-27
 
 ### Fixed

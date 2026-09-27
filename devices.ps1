@@ -11,7 +11,7 @@ param (
 )
 
 # Name:         Devices
-# Version:      0.3.1
+# Version:      0.3.2
 # Release:      1
 # License:      CC BY-NC-SA (Creative Commons Attribution-NonCommercial-ShareAlike)
 #               http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
@@ -41,15 +41,21 @@ $output_dir  = "$script_dir\output"
 $script_text = Get-Content $script_file
 
 function unzip_stencil($stencil_file) {
-  $zip_file    = "$stencil_file.zip"
+  if (Test-Path $stencil_file) {
+    return
+  }
+  $zip_file = "$stencil_file.zip"
+  if (!(Test-Path $zip_file)) {
+    Write-Host "Stencil file not found: '$stencil_file' (and no '$zip_file' to extract it from)"
+    Write-Host "See the README 'Documentation' section for how to obtain vendor stencils"
+    exit
+  }
   $shell_obj   = new-object -com shell.application
   $zip_obj     = $shell_obj.NameSpace($zip_file)
   $destination = Split-Path $stencil_file
-  if (!(Test-Path $stencil_file)) {
-    foreach($item in $zip_obj.items()) {
-      Write-Host "Extracting '$item' from '$zip_file' to '$destination'"
-      $shell_obj.Namespace($destination).copyhere($item)
-    }
+  foreach($item in $zip_obj.items()) {
+    Write-Host "Extracting '$item' from '$zip_file' to '$destination'"
+    $shell_obj.Namespace($destination).copyhere($item)
   }
   return
 }
@@ -126,7 +132,7 @@ if ($verbose) {
 
 if ($outputfile) {
   $output_file = $outputfile
-  if (!($output_file -match ":")) {
+  if (![System.IO.Path]::IsPathRooted($output_file)) {
     $output_file = "$script_dir\$output_file"
   }
 }
@@ -290,9 +296,10 @@ if ($input_file -match "csv$") {
     }
     # Select Rack Page
     if ($rackperfile) {
-      $visio       = New-VisioApplication
-      $output_file = "$output_dir\$rack_name.vsd"
-      $new_doc     = New-VisioDocument $output_file
+      $visio          = New-VisioApplication
+      $safe_rack_name = $rack_name -replace '[\\/:\*\?"<>\|]', '_'
+      $output_file    = "$output_dir\$safe_rack_name.vsd"
+      $new_doc        = New-VisioDocument $output_file
       $new_page    = New-VisioPage -Name $rack_name
       # A new document has no stencils registered in it yet
       $stencils_loaded = @{}

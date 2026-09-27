@@ -1,7 +1,7 @@
 DEVICES
 =======
 
-Version: 0.3.1
+Version: 0.3.2
 
 Diagram Export in Visio from CSV (and in the future Excel and other Sources)
 
