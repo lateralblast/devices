@@ -11,7 +11,7 @@ param (
 )
 
 # Name:         Devices
-# Version:      0.3.2
+# Version:      0.3.3
 # Release:      1
 # License:      CC BY-NC-SA (Creative Commons Attribution-NonCommercial-ShareAlike)
 #               http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
@@ -58,6 +58,17 @@ function unzip_stencil($stencil_file) {
     $shell_obj.Namespace($destination).copyhere($item)
   }
   return
+}
+
+function Set-ShapeDefaults($shape, $label_text) {
+  $shape.Characters.Text              = $label_text
+  $shape.Cells("Char.Color").FormulaU = $default_text_colour
+  $shape.Cells("Char.Size").FormulaU  = $default_text_size
+  $shape.Cells("TxtLocPinX").FormulaU = $default_text_x_pos
+  $shape.Cells("TxtLocPinY").FormulaU = $default_text_y_pos
+  $shape.Cells("TextBkgnd").FormulaU  = $default_back_colour
+  $shape.Cells("HideText").FormulaU   = $default_text_hidden
+  return $shape
 }
 
 function get_file_type($input_file) {
@@ -402,31 +413,19 @@ if ($input_file -match "csv$") {
       $text_hidden  = $shape.Cells("HideText").FormulaU   = $default_text_hidden
     }
     # Place rack front stencil
-    $shape_pos   = Set-NextShapePosition -x $front_rack_x -y $front_rack_y
-    $shape       = rack_stencil rack_front
-    $label       = $shape.Characters.Text = $rack_name
-    $text_colour = $shape.Cells("Char.Color").FormulaU = $default_text_colour
-    $text_size   = $shape.Cells("Char.Size").FormulaU  = $default_text_size
-    $text_x_pos  = $shape.Cells("TxtLocPinX").FormulaU = $default_text_x_pos
-    $text_y_pos  = $shape.Cells("TxtLocPinY").FormulaU = $default_text_y_pos
-    $text_back   = $shape.Cells("TextBkgnd").FormulaU  = $default_back_colour
-    $text_hidden = $shape.Cells("HideText").FormulaU   = $default_text_hidden
-    $shape_data  = Set-VisioShapeData -Shape $rack_front -Name ProductNumber ""
+    $shape_pos  = Set-NextShapePosition -x $front_rack_x -y $front_rack_y
+    $shape      = rack_stencil rack_front
+    $shape      = Set-ShapeDefaults $shape $rack_name
+    $shape_data = Set-VisioShapeData -Shape $rack_front -Name ProductNumber ""
     $shape_data  = Set-VisioShapeData -Shape $rack_front -Name Manufacturer ""
     $shape_data  = Set-VisioShapeData -Shape $rack_front -Name ProductNumber ""
     $shape_data  = Set-VisioShapeData -Shape $rack_front -Name PartNumber ""
     $shape_data  = Set-VisioShapeData -Shape $rack_front -Name ProductDescription ""
     # Place rack back stencil
-    $shape_pos   = Set-NextShapePosition -x $back_rack_x -y $back_rack_y
-    $shape       = rack_stencil rack_back
-    $label       = $shape.Characters.Text = $rack_name
-    $text_colour = $shape.Cells("Char.Color").FormulaU = $default_text_colour
-    $text_size   = $shape.Cells("Char.Size").FormulaU  = $default_text_size
-    $text_x_pos  = $shape.Cells("TxtLocPinX").FormulaU = $default_text_x_pos
-    $text_y_pos  = $shape.Cells("TxtLocPinY").FormulaU = $default_text_y_pos
-    $text_back   = $shape.Cells("TextBkgnd").FormulaU  = $default_back_colour
-    $text_hidden = $shape.Cells("HideText").FormulaU   = $default_text_hidden
-    $shape_data  = Set-VisioShapeData -Shape $rack_back -Name ProductNumber ""
+    $shape_pos  = Set-NextShapePosition -x $back_rack_x -y $back_rack_y
+    $shape      = rack_stencil rack_back
+    $shape      = Set-ShapeDefaults $shape $rack_name
+    $shape_data = Set-VisioShapeData -Shape $rack_back -Name ProductNumber ""
     $shape_data  = Set-VisioShapeData -Shape $rack_back -Name Manufacturer ""
     $shape_data  = Set-VisioShapeData -Shape $rack_back -Name ProductNumber ""
     $shape_data  = Set-VisioShapeData -Shape $rack_back -Name PartNumber ""
@@ -539,16 +538,10 @@ if ($input_file -match "csv$") {
       $cur_front_ru_y = [float]$front_ru_y + ([float]$top_ru * [float]$ru_space) - $rack_space
       $cur_back_ru_y  = [float]$back_ru_y + ([float]$top_ru * [float]$ru_space) - $rack_space
       # Place front shape
-      $shape_pos      = Set-NextShapePosition -x $cur_front_ru_x -y $cur_front_ru_y
-      $shape          = stencil_front stencil
-      $shape_label    = $shape.Characters.Text = $info
-      $text_colour    = $shape.Cells("Char.Color").FormulaU = $default_text_colour
-      $text_size      = $shape.Cells("Char.Size").FormulaU  = $default_text_size
-      $text_x_pos     = $shape.Cells("TxtLocPinX").FormulaU = $default_text_x_pos
-      $text_y_pos     = $shape.Cells("TxtLocPinY").FormulaU = $default_text_y_pos
-      $text_back      = $shape.Cells("TextBkgnd").FormulaU  = $default_back_colour
-      $text_hidden    = $shape.Cells("HideText").FormulaU   = $default_text_hidden
-      $shape_pos      = $shape.BringToFront()
+      $shape_pos = Set-NextShapePosition -x $cur_front_ru_x -y $cur_front_ru_y
+      $shape     = stencil_front stencil
+      $shape     = Set-ShapeDefaults $shape $info
+      $shape_pos = $shape.BringToFront()
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name SerialNumber $serial
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name AssetNumber $asset
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name Location $location
@@ -559,16 +552,10 @@ if ($input_file -match "csv$") {
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name OperatingSystem $os
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name SystemName $hostname
       # Place back shape
-      $shape_pos      = Set-NextShapePosition -x $cur_back_ru_x -y $cur_back_ru_y
-      $shape          = stencil_back stencil
-      $shape_label    = $shape.Characters.Text = $info
-      $text_colour    = $shape.Cells("Char.Color").FormulaU = $default_text_colour
-      $text_size      = $shape.Cells("Char.Size").FormulaU  = $default_text_size
-      $text_x_pos     = $shape.Cells("TxtLocPinX").FormulaU = $default_text_x_pos
-      $text_y_pos     = $shape.Cells("TxtLocPinY").FormulaU = $default_text_y_pos
-      $text_back      = $shape.Cells("TextBkgnd").FormulaU  = $default_back_colour
-      $text_hidden    = $shape.Cells("HideText").FormulaU   = $default_text_hidden
-      $shape_pos      = $shape.BringToFront()
+      $shape_pos = Set-NextShapePosition -x $cur_back_ru_x -y $cur_back_ru_y
+      $shape     = stencil_back stencil
+      $shape     = Set-ShapeDefaults $shape $info
+      $shape_pos = $shape.BringToFront()
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name SerialNumber $serial
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name AssetNumber $asset
       $shape_data     = Set-VisioShapeData -Shape $stencil -Name Location $location
