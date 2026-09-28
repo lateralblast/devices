@@ -11,7 +11,7 @@ param (
 )
 
 # Name:         Devices
-# Version:      0.3.3
+# Version:      0.3.4
 # Release:      1
 # License:      CC BY-NC-SA (Creative Commons Attribution-NonCommercial-ShareAlike)
 #               http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
@@ -379,19 +379,22 @@ if ($input_file -match "csv$") {
     }
     $sun_rows = $cur_rows | Where {$_.Vendor -match "Oracle|Sun"}
     if ($sun_rows) {
-      $model_test = $sun_rows | Where {$_.Model -match "Blade|^B[0-9]"}
+      # These gates must mirror the per-row dispatch switch below exactly (Model contains "Blade" -> blade,
+      # else Architecture SPARC/sparc -> sparc, else -> intel), or a row can be dispatched to a stencil that
+      # was never registered for this rack.
+      $model_test = $sun_rows | Where {$_.Model -match "Blade"}
       if ($model_test -match "[A-Z]" -and !($stencils_loaded["oracle_blade_server_stencils"])) {
         unzip_stencil($oracle_blade_server_stencils_file)
         $oracle_blade_server_stencils = Register-VisioStencil -Name oracle_blade_server_stencils $oracle_blade_server_stencils_file
         $stencils_loaded["oracle_blade_server_stencils"] = $true
       }
-      $model_test = $sun_rows | Where {$_.Model -match "SPARC|sparc|^T[0-9]|^M[0-9]|^E[0-9]"}
+      $model_test = $sun_rows | Where {$_.Model -notmatch "Blade" -and $_.Architecture -match "SPARC|sparc"}
       if ($model_test -match "[A-Z]" -and !($stencils_loaded["oracle_sparc_server_stencils"])) {
         unzip_stencil($oracle_sparc_server_stencils_file)
         $oracle_sparc_server_stencils = Register-VisioStencil -Name oracle_sparc_server_stencils $oracle_sparc_server_stencils_file
         $stencils_loaded["oracle_sparc_server_stencils"] = $true
       }
-      $model_test = $sun_rows | Where {$_.Model -match "X64|X86|x64|x86|i386|^X[0-9]"}
+      $model_test = $sun_rows | Where {$_.Model -notmatch "Blade" -and $_.Architecture -notmatch "SPARC|sparc"}
       if ($model_test -match "[A-Z]" -and !($stencils_loaded["oracle_intel_server_stencils"])) {
         unzip_stencil($oracle_intel_server_stencils_file)
         $oracle_intel_server_stencils = Register-VisioStencil -Name oracle_intel_server_stencils $oracle_intel_server_stencils_file

@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.4] - 2026-09-28
+
+### Fixed
+- Oracle/Sun stencil registration was gated on `Model` prefix regexes (e.g. `^T[0-9]|^M[0-9]|^E[0-9]` for SPARC),
+  but the per-row dispatch switch that actually picks the master shape decides SPARC vs. Intel from the
+  `Architecture` column instead. A row with a SPARC `Architecture` but a `Model` that didn't match those prefixes
+  would never get its SPARC stencil registered, then fail at dispatch time trying to use it. The registration
+  gates now mirror the dispatch switch's logic exactly (`Model` contains `Blade` -> blade, else `Architecture`
+  SPARC/sparc -> SPARC, else -> Intel).
+
 ## [0.3.3] - 2026-09-27
 
 ### Changed
