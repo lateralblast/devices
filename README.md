@@ -1,9 +1,9 @@
 DEVICES
 =======
 
-Version: 0.5.2
+Version: 0.6.0
 
-Diagram Export in Visio from CSV (and in the future Excel and other Sources)
+Diagram Export in Visio from CSV and Excel (and in the future other Sources)
 
 License
 -------
@@ -18,7 +18,8 @@ Introduction
 A Powershell script for creating Visio Diagrams of DC racks and the hardware in them, and a Python script
 (`devices.py`) that draws the same rack elevations as SVG, PNG, JPG or PDF without needing Windows or Visio.
 
-The import can be in the form of CSV or Excel (still under development).
+The import can be in the form of CSV or Excel (`.xls` or `.xlsx`, first worksheet by default). See `input/example.csv`,
+`input/example.xls` and `input/example.xlsx`; the first row holds the column headings.
 
 This could also be used to automate Visio digram creations using exports from CMDBs (e.g. ServiceNow, Remedy, etc).
 
@@ -26,7 +27,7 @@ At the moment the script is a proof of concept. It has support for a number of v
 
 Things to do:
 
-- Excel import support
+- Other input sources (e.g. CMDB exports)
 
 Background
 ----------
@@ -52,8 +53,8 @@ and composes them into one drawing per rack. The output format is chosen by the 
 
 Requirements:
 
-- Python 3 and the packages in `requirements.txt` (`pip install -r requirements.txt`): Pillow for JPG output, and
-  selenium, which devon.py needs and which runs under the same Python
+- Python 3 and the packages in `requirements.txt` (`pip install -r requirements.txt`): Pillow for JPG output,
+  openpyxl and xlrd for xlsx and xls input, and selenium, which devon.py needs and which runs under the same Python
 - [devon.py](https://github.com/lateralblast/devon), found via `-devon PATH`, `$DEVON` or `../devon/devon.py`
 - libvisio (`vss2raw` and `vss2xhtml`), `emf2svg-conv` and `rsvg-convert` on the PATH
 - The visio-stencils repository (see Documentation below)
@@ -89,7 +90,8 @@ is drawn as a blank plate and a warning is printed. If a model is found in the w
 
 Switches (`python3 devices.py -h` lists them all):
 
-- `-inputfile FILENAME` CSV file (required)
+- `-inputfile FILENAME` CSV, xls or xlsx file (required)
+- `-sheet NAME` worksheet to read from an xls/xlsx file (default: the first)
 - `-outputfile FILENAME` output file (required unless `-rackperfile` is used)
 - `-longracknames` append chassis hostnames to the rack names
 - `-showlabels` show a `hostname: component` tag on each device and the rack name beside the rack
@@ -134,6 +136,7 @@ The following software is required:
 - Powershell
 - Visio
 - Visio Stencils for vendor products
+- Excel (only to read `.xls`/`.xlsx` input files)
 - VisioBot3000 Powershell Module
 
 Installing Powershell Module:
@@ -236,6 +239,14 @@ array2,SH1,Pure,,Disk shelf,,A2,2,21,12356,,,,,
 array2,SH0,Pure,,Disk shelf,,A2,2,23,12357,,,,,
 array2,CH0,Pure,,FA-m70r2,,A2,3,26,12358,,,,,
 flashblade2,CH1,Pure,,FlashBlade,,A2,4,30,123459,,,,,
+```
+
+Excel files (`.xls`, `.xlsx`) are read in the Python version with `openpyxl` (xlsx) and `xlrd` (xls), both in
+`requirements.txt`. The PowerShell version uses the installed copy of Excel (via COM) to save the worksheet as a
+temporary CSV, and takes `-sheet NAME` to pick a worksheet:
+
+```
+Y:\Code\devices>powershell -ExecutionPolicy ByPass -File devices.ps1 -inputfile input\example.xlsx -outputfile output\example.vsd
 ```
 
 Importing CSV file and creating Visio diagrams:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Name:         devices (Python)
-# Version:      0.5.2
+# Version:      0.6.0
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode
@@ -26,6 +26,7 @@ devon.py, and the SVGs are cached under svg-cache/.
 import argparse
 import copy
 import csv
+import datetime
 import json
 import os
 import re
@@ -561,6 +562,99 @@ def build_rack_page(lib, rack_name, rows, opts):
   return svg
 
 
+COLUMNS = ["Hostname", "Component", "Vendor", "Architecture", "Model", "Operating System", "Rack",
+           "Rack Units", "Top Rack Unit", "Serial Number", "Asset Number", "Installed Date",
+           "Warranty Exp", "Location", "Country"]
+
+
+def cell_text(value):
+  """Text for a spreadsheet cell: whole numbers without the .0, dates as YYYY-MM-DD."""
+  if value is None:
+    return ""
+  if isinstance(value, bool):
+    return str(value)
+  if isinstance(value, float) and value.is_integer():
+    return str(int(value))
+  if isinstance(value, datetime.datetime):
+    return value.date().isoformat() if value.time() == datetime.time() else value.isoformat(sep=" ")
+  if isinstance(value, datetime.date):
+    return value.isoformat()
+  return str(value).strip()
+
+
+def read_csv(path):
+  with open(path, newline="", encoding="utf-8-sig") as f:
+    return [[c for c in row] for row in csv.reader(f)]
+
+
+def read_xlsx(path, sheet):
+  try:
+    import openpyxl
+  except ImportError:
+    sys.exit("openpyxl is needed to read .xlsx files (pip install openpyxl)")
+  book = openpyxl.load_workbook(path, read_only=True, data_only=True)
+  try:
+    ws = book[sheet] if sheet else book.worksheets[0]
+  except KeyError:
+    sys.exit(f"Sheet '{sheet}' not found in {path}; sheets: {', '.join(book.sheetnames)}")
+  return [[cell_text(v) for v in row] for row in ws.iter_rows(values_only=True)]
+
+
+def read_xls(path, sheet):
+  try:
+    import xlrd
+  except ImportError:
+    sys.exit("xlrd is needed to read .xls files (pip install xlrd)")
+  book = xlrd.open_workbook(path)
+  try:
+    ws = book.sheet_by_name(sheet) if sheet else book.sheet_by_index(0)
+  except xlrd.XLRDError:
+    sys.exit(f"Sheet '{sheet}' not found in {path}; sheets: {', '.join(book.sheet_names())}")
+  rows = []
+  for r in range(ws.nrows):
+    row = []
+    for cell in ws.row(r):
+      if cell.ctype == xlrd.XL_CELL_DATE:
+        row.append(cell_text(xlrd.xldate.xldate_as_datetime(cell.value, book.datemode)))
+      elif cell.ctype in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK):
+        row.append("")
+      else:
+        row.append(cell_text(cell.value))
+    rows.append(row)
+  return rows
+
+
+def load_rows(path, sheet=None):
+  """Read hardware rows from a CSV, xlsx or xls file (first sheet unless sheet is given).
+  The first row is the header; columns are matched by name, ignoring case and spacing."""
+  ext = os.path.splitext(path)[1].lower()
+  if ext not in (".csv", ".xlsx", ".xlsm", ".xls"):
+    # Unknown extension: go by the file's first bytes (zip = xlsx, OLE2 = xls), else treat as CSV
+    with open(path, "rb") as f:
+      magic = f.read(4)
+    ext = ".xlsx" if magic[:2] == b"PK" else ".xls" if magic == b"\xd0\xcf\x11\xe0" else ".csv"
+  if ext == ".csv":
+    table = read_csv(path)
+  elif ext == ".xls":
+    table = read_xls(path, sheet)
+  else:
+    table = read_xlsx(path, sheet)
+  if not table:
+    sys.exit(f"No data in '{path}'")
+  header = {norm(h): i for i, h in enumerate(table[0])}
+  missing = [c for c in ("Hostname", "Rack", "Rack Units", "Top Rack Unit") if norm(c) not in header]
+  if missing:
+    sys.exit(f"'{path}' has no {', '.join(missing)} column(s); the first row must be the column headings")
+  rows = []
+  for values in table[1:]:
+    if not any(str(v).strip() for v in values):
+      continue
+    # Short rows leave later columns missing; treat them as empty
+    rows.append({c: (str(values[header[norm(c)]]).strip() if norm(c) in header and header[norm(c)] < len(values) else "")
+                 for c in COLUMNS})
+  return rows
+
+
 def to_float(value):
   try:
     return float(value)
@@ -603,9 +697,10 @@ def main():
   p = argparse.ArgumentParser(
       description="Generate rack elevation diagrams from a CSV file, using SVGs extracted from Visio stencils",
       allow_abbrev=False)
-  p.add_argument("-inputfile", "--inputfile", metavar="FILENAME", help="CSV file describing the hardware")
+  p.add_argument("-inputfile", "--inputfile", metavar="FILENAME", help="CSV, xls or xlsx file describing the hardware")
   p.add_argument("-outputfile", "--outputfile", metavar="FILENAME",
                  help="output file; format from extension: .svg .png .jpg .pdf")
+  p.add_argument("-sheet", "--sheet", metavar="NAME", help="worksheet to read from an .xls/.xlsx file (default: the first)")
   p.add_argument("-longracknames", "--longracknames", action="store_true",
                  help="append chassis hostnames to rack names")
   p.add_argument("-showlabels", "--showlabels", action="store_true", help="show hostname labels")
@@ -636,14 +731,7 @@ def main():
   if not opts.outputfile and not opts.rackperfile:
     p.error("output file not specified")
 
-  with open(opts.inputfile, newline="", encoding="utf-8-sig") as f:
-    columns = ["Hostname", "Component", "Vendor", "Architecture", "Model", "Operating System", "Rack",
-               "Rack Units", "Top Rack Unit", "Serial Number", "Asset Number", "Installed Date",
-               "Warranty Exp", "Location", "Country"]
-    rows = []
-    for r in csv.DictReader(f):
-      # Short rows leave later columns as None; treat them as empty
-      rows.append({c: (r.get(c) or "").strip() for c in columns})
+  rows = load_rows(opts.inputfile, opts.sheet)
 
   racks = list(dict.fromkeys(r["Rack"] for r in rows))
   lib = StencilLibrary(opts.stencildir, opts.cachedir, opts.devon, opts.verbose, opts.maxscan)

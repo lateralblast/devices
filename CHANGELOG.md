@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-10-02
+
+### Added
+- Excel input (`.xls`, `.xlsx`, `.xlsm`) for both scripts, with `-sheet NAME` to choose a worksheet (default: the
+  first). `devices.py` reads them with openpyxl and xlrd (added to `requirements.txt`) and `input/example.xls` and
+  `input/example.xlsx` give the same rows as `input/example.csv`. `devices.ps1` has Excel save the worksheet as a
+  temporary CSV through COM, and needs Excel installed; this path has not been run.
+- `devices.py` matches column headings ignoring case and spacing, skips blank rows, and sniffs the file type when the
+  extension is unknown.
+
+### Changed
+- `devices.ps1` decides what to process from the rows it loaded rather than the input file's name, and reports an
+  unsupported input file type.
+
+### Removed
+- The unfinished Excel stub and the now unused MIME check in `devices.ps1`'s input loading.
+
 ## [0.5.2] - 2026-10-02
 
 ### Added

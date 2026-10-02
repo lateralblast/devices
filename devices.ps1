@@ -7,11 +7,12 @@ param (
   [switch] $pagelabels,
   [switch] $rackperfile,
   [string] $inputfile, 
+  [string] $sheet,
   [string] $outputfile
 )
 
 # Name:         Devices
-# Version:      0.5.2
+# Version:      0.6.0
 # Release:      1
 # License:      CC BY-NC-SA (Creative Commons Attribution-NonCommercial-ShareAlike)
 #               http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
@@ -90,6 +91,7 @@ function print_help($script_name) {
   Write-Host "--version"
   Write-Host "--inputfile  FILENAME"
   Write-Host "--outputfile FILENAME"
+  Write-Host "--sheet       NAME (worksheet to read from an xls/xlsx input file, default is the first)"
   Write-Host "--longracknames"
   Write-Host "--showlabels"
   Write-Host "--rackperfile"
@@ -162,22 +164,47 @@ else {
   }
 }
 
-# Get file type
-
-$file_type = get_file_type($input_file)
-
 # Handle opening file
 
-if ($input_file -match "xls$|xlsx$" -And $file_type -match "octet") {
-  $excel   = New-Object -ComObject Excel.Application
-  $book    = $excel.Workbooks.Open($input_file)
-  $sheet   = $book.Worksheets.Item(1)
-  $max_row = ($sheet.UsedRange.Rows).count 
-  $max_col = ($sheet.UsedRange.Columns).count
+if ($input_file -match "\.(xls|xlsx|xlsm)$") {
+  # Let Excel save the worksheet as a temporary CSV, then read it like any other CSV
+  $excel_file = (Resolve-Path $input_file).Path
+  $temp_csv   = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "devices_" + [System.Guid]::NewGuid().ToString() + ".csv")
+  $excel      = New-Object -ComObject Excel.Application
+  $excel.Visible        = $false
+  $excel.DisplayAlerts  = $false
+  try {
+    $book = $excel.Workbooks.Open($excel_file, 0, $true)
+    if ($sheet) {
+      $book_sheet = $book.Worksheets.Item($sheet)
+    }
+    else {
+      $book_sheet = $book.Worksheets.Item(1)
+    }
+    # 6 = xlCSV
+    $book_sheet.SaveAs($temp_csv, 6)
+    $book.Close($false)
+    $csv_rows = Import-Csv $temp_csv
+  }
+  catch {
+    Write-Host "Unable to read '$input_file' with Excel: $_"
+    exit
+  }
+  finally {
+    $excel.Quit()
+    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($excel) | Out-Null
+    if (Test-Path $temp_csv) {
+      Remove-Item $temp_csv
+    }
+  }
 }
 else {
   if ($input_file -match "csv$") {
     $csv_rows = Import-Csv $input_file
+  }
+  else {
+    Write-Host "Unsupported input file type: '$input_file' (use a csv, xls or xlsx file)"
+    exit
   }
 }
 
@@ -261,7 +288,7 @@ $cur_rack       = "None"
 
 # Process CSV
 
-if ($input_file -match "csv$") {
+if ($csv_rows) {
   $stencils_loaded = @{}
   # Open Visio Document
   if (!($rackperfile)) {
