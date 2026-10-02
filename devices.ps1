@@ -11,7 +11,7 @@ param (
 )
 
 # Name:         Devices
-# Version:      0.3.4
+# Version:      0.3.6
 # Release:      1
 # License:      CC BY-NC-SA (Creative Commons Attribution-NonCommercial-ShareAlike)
 #               http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
@@ -35,7 +35,7 @@ $script_file = $MyInvocation.MyCommand
 $script_dir  = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 $script_vers = ""
 # $data_dir    = "$script_dir\data"
-$stencil_dir = "$script_dir\stencils"
+$stencil_dir = "$script_dir\visio-stencils"
 $output_dir  = "$script_dir\output"
 
 $script_text = Get-Content $script_file
@@ -46,6 +46,10 @@ function unzip_stencil($stencil_file) {
   }
   $zip_file = "$stencil_file.zip"
   if (!(Test-Path $zip_file)) {
+    # Some zips are named without the stencil extension, e.g. Dell-PowerEdge-RackServers.zip
+    $zip_file = [System.IO.Path]::ChangeExtension($stencil_file, "zip")
+  }
+  if (!(Test-Path $zip_file)) {
     Write-Host "Stencil file not found: '$stencil_file' (and no '$zip_file' to extract it from)"
     Write-Host "See the README 'Documentation' section for how to obtain vendor stencils"
     exit
@@ -54,6 +58,9 @@ function unzip_stencil($stencil_file) {
   $zip_obj     = $shell_obj.NameSpace($zip_file)
   $destination = Split-Path $stencil_file
   foreach($item in $zip_obj.items()) {
+    if ($item.Name -eq "__MACOSX") {
+      continue
+    }
     Write-Host "Extracting '$item' from '$zip_file' to '$destination'"
     $shell_obj.Namespace($destination).copyhere($item)
   }
@@ -179,30 +186,36 @@ $csv_racks = $csv_rows.Rack | Select-Object -Unique
 # Set up some global stencil files
 
 $basic_shapes_stencils_file        = "BASIC_U.VSSX"
-$oracle_sparc_server_stencils_file = "$stencil_dir\oracle\Oracle-Server-SPARC.vss"
-$oracle_intel_server_stencils_file = "$stencil_dir\oracle\Oracle-Server-x86.vss"
-$oracle_blade_server_stencils_file = "$stencil_dir\oracle\Oracle-Server-Blade.vss"
-$dell_rack_stencils_file           = "$stencil_dir\dell\Dell-Racks.vss"
-$dell_blade_server_stencils_file   = "$stencil_dir\dell\Dell-PowerEdge-BladeServers.vss"
-$dell_rack_server_stencils_file    = "$stencil_dir\dell\Dell-PowerEdge-RackServers.vss"
-$dell_sc_storage_stencils_file     = "$stencil_dir\dell\Dell-Storage-Compellent-SC.vss"
-$dell_ps_storage_stencils_file     = "$stencil_dir\dell\Dell-Storage-EqualLogic-PS.vss"
-$dell_md_storage_stencils_file     = "$stencil_dir\dell\Dell-Storage-PowerVault-Dx-MD-NX.vss"
-$dell_emc_storage_stencils_file    = "$stencil_dir\dell\Dell-EMC.vss"
-$ibm_power_stencils_file           = "$stencil_dir\ibm\IBM-Server-Power.vss"
-$ibm_systemi_stencils_file         = "$stencil_dir\ibm\IBM-Server-Systemi.vss"
-$ibm_systemp_stencils_file         = "$stencil_dir\ibm\IBM-Server-Systemp.vss"
-$ibm_systemx_stencils_file         = "$stencil_dir\ibm\IBM-Server-Systemx.vss"
-$ibm_systemz_stencils_file         = "$stencil_dir\ibm\IBM-Server-Systemz.vss"
-$pure_storage_array_stencils_file  = "$stencil_dir\pure\Purestorage.vss"
-$netapp_nearstore_stencils_file    = "$stencil_dir\netapp\NetApp-NearStore-classic.vss"
-$netapp_fas_stencils_file          = "$stencil_dir\netapp\NetApp-FAS-Series.vss"
-$netapp_old_fas_stencils_file      = "$stencil_dir\netapp\NetApp-FAS-Series-classic.vss"
-$netapp_e_series_stencils_file     = "$stencil_dir\netapp\NetApp-E-Series.vss"
-$netapp_s_series_stencils_file     = "$stencil_dir\netapp\NetApp-S-Family-classic.vss"
-$netapp_v_series_stencils_file     = "$stencil_dir\netapp\NetApp-V-Series.vss"
-$netapp_old_v_series_stencils_file = "$stencil_dir\netapp\NetApp-V-Series-classic.vss"
-$netapp_vtl_stencils_file          = "$stencil_dir\netapp\NetApp-VTL-Series-classic.vss"
+$oracle_sparc_server_stencils_file = "$stencil_dir\o\oracle\Oracle-Server-SPARC.vss"
+$oracle_intel_server_stencils_file = "$stencil_dir\o\oracle\Oracle-Server-x86.vss"
+$oracle_blade_server_stencils_file = "$stencil_dir\o\oracle\Oracle-Server-Blade.vss"
+$dell_rack_stencils_file           = "$stencil_dir\d\dell\Dell-Racks.vss"
+$dell_classic_server_stencils_file = "$stencil_dir\d\dell\Dell-PowerEdge-RackServers-Classic.vss"
+$dell_blade_server_stencils_file   = "$stencil_dir\d\dell\Dell-PowerEdge-BladeServers.vss"
+$dell_rack_server_stencils_file    = "$stencil_dir\d\dell\Dell-PowerEdge-RackServers.vss"
+$dell_sc_storage_stencils_file     = "$stencil_dir\d\dell\Dell-Storage-Compellent-SC.vss"
+$dell_ps_storage_stencils_file     = "$stencil_dir\d\dell\Dell-Storage-EqualLogic-PS.vss"
+$dell_md_storage_stencils_file     = "$stencil_dir\d\dell\Dell-Storage-PowerVault-Dx-MD-NX.vss"
+$dell_emc_storage_stencils_file    = "$stencil_dir\d\dell\Dell-EMC.vss"
+$ibm_power_stencils_file           = "$stencil_dir\i\ibm\IBM-Server-Power.vss"
+$ibm_systemi_stencils_file         = "$stencil_dir\i\ibm\IBM-Server-Systemi.vss"
+$ibm_systemp_stencils_file         = "$stencil_dir\i\ibm\IBM-Server-Systemp.vss"
+$ibm_systemx_stencils_file         = "$stencil_dir\i\ibm\IBM-Server-Systemx.vss"
+$ibm_systemz_stencils_file         = "$stencil_dir\i\ibm\IBM-Server-Systemz.vss"
+$pure_storage_array_stencils_file  = "$stencil_dir\p\pure\Purestorage.vss"
+$netapp_nearstore_stencils_file    = "$stencil_dir\n\netapp\NetApp-NearStore-classic.vss"
+$netapp_fas_stencils_file          = "$stencil_dir\n\netapp\NetApp-FAS-Series.vss"
+$netapp_old_fas_stencils_file      = "$stencil_dir\n\netapp\NetApp-FAS-Series-classic.vss"
+$netapp_e_series_stencils_file     = "$stencil_dir\n\netapp\NetApp-E-Series.vss"
+$netapp_s_series_stencils_file     = "$stencil_dir\n\netapp\NetApp-S-Family-classic.vss"
+$netapp_v_series_stencils_file     = "$stencil_dir\n\netapp\NetApp-V-Series.vss"
+$netapp_old_v_series_stencils_file = "$stencil_dir\n\netapp\NetApp-V-Series-classic.vss"
+$netapp_vtl_stencils_file          = "$stencil_dir\n\netapp\NetApp-VTL-Series-classic.vss"
+
+# Dell rack server models (R/C series) in the current stencil. Older models (e.g. R820, R730) were moved to the
+# Dell-PowerEdge-RackServers-Classic stencil. Used by both the registration gates and the shape dispatch.
+
+$dell_current_server_models = "^C6520|^C6525|^C6600|^R250|^R350|^R450|^R470|^R550|^R570|^R650|^R660|^R670|^R750|^R760|^R770|^R840|^R860|^R940|^R960|^R6525|^R6615|^R6625|^R6715|^R6725|^R7525|^R7615|^R7625|^R7715|^R7725"
 
 # Default Rack
 
@@ -346,11 +359,17 @@ if ($input_file -match "csv$") {
         $dell_emc_storage_stencils = Register-VisioStencil -Name dell_emc_storage_stencils  $dell_emc_storage_stencils_file
         $stencils_loaded["dell_emc_storage_stencils"] = $true
       }
-      $model_test = $dell_rows | Where {$_.Model -match "^R|^C"}
+      $model_test = $dell_rows | Where {$_.Model -match $dell_current_server_models}
       if ($model_test -match "[A-Z]" -and !($stencils_loaded["dell_rack_server_stencils"])) {
         unzip_stencil($dell_rack_server_stencils_file)
         $dell_rack_server_stencils = Register-VisioStencil -Name dell_rack_server_stencils $dell_rack_server_stencils_file
         $stencils_loaded["dell_rack_server_stencils"] = $true
+      }
+      $model_test = $dell_rows | Where {$_.Model -match "^R|^C" -and $_.Model -notmatch $dell_current_server_models -and $_.Model -notmatch "^CX4|^NX4"}
+      if ($model_test -match "[A-Z]" -and !($stencils_loaded["dell_classic_server_stencils"])) {
+        unzip_stencil($dell_classic_server_stencils_file)
+        $dell_classic_server_stencils = Register-VisioStencil -Name dell_classic_server_stencils $dell_classic_server_stencils_file
+        $stencils_loaded["dell_classic_server_stencils"] = $true
       }
       $model_test = $dell_rows | Where {$_.Model -match "^M[0-9]"}
       if ($model_test -match "[A-Z]" -and !($stencils_loaded["dell_blade_server_stencils"])) {
@@ -463,9 +482,17 @@ if ($input_file -match "csv$") {
               $dell_emc_storage_stencil_front = Register-VisioShape -Name stencil_front -From dell_emc_storage_stencils -MasterName "$front_name"
               $dell_emc_storage_stencil_back  = Register-VisioShape -Name stencil_back  -From dell_emc_storage_stencils -MasterName "$back_name"
             }
-            "^R|^C" {
+            $dell_current_server_models {
               $dell_rack_server_stencil_front = Register-VisioShape -Name stencil_front -From dell_rack_server_stencils -MasterName "$front_name"
               $dell_rack_server_stencil_back  = Register-VisioShape -Name stencil_back  -From dell_rack_server_stencils -MasterName "$back_name"
+            }
+            "^R|^C" {
+              # Older models live in the Classic stencil; keep this the exact complement of the
+              # current-stencil case above and the registration gates, as switch -regex runs every matching case
+              if ($model -notmatch $dell_current_server_models -and $model -notmatch "^CX4|^NX4") {
+                $dell_classic_server_stencil_front = Register-VisioShape -Name stencil_front -From dell_classic_server_stencils -MasterName "$front_name"
+                $dell_classic_server_stencil_back  = Register-VisioShape -Name stencil_back  -From dell_classic_server_stencils -MasterName "$back_name"
+              }
             }
             "^M[0-9]" {
               $dell_blade_server_stencil_front = Register-VisioShape -Name stencil_front -From dell_blade_server_stencils -MasterName "$front_name"

@@ -1,7 +1,7 @@
 DEVICES
 =======
 
-Version: 0.3.4
+Version: 0.3.6
 
 Diagram Export in Visio from CSV (and in the future Excel and other Sources)
 
@@ -80,19 +80,22 @@ You can copy the script manually from the git repository or clone it:
 $ git clone https://github.com/lateralblast/devices.git .
 ```
 
-Stencils are put in the 'stencils' subdirectory under a 'vendor' subdirectory.
+Stencils are put in the 'visio-stencils' subdirectory under a first letter subdirectory and then a 'vendor'
+subdirectory, e.g. 'visio-stencils\d\dell\Dell-Racks.vss' (this is the layout of the repository below).
 
-To help, I'm building a collection of Visio stencils here:
+To help, I'm building a repository of zipped Visio stencils here:
 
-https://github.com/lateralblast/vss
+https://github.com/lateralblast/visio-stencils
 
-This repository is getting rather large so I'd recommend you just copy the ones you need.
+**Warning:** this repository is large, several gigabytes in size, so I'd recommend you just copy the ones you need
+rather than cloning the whole thing.
+The script extracts a stencil from its zip file the first time it is needed.
 
 If you wanted to clone the entire collection:
 
 ```
 $ cd devices
-$ git clone https://github.com/lateralblast/vss.git stencils
+$ git clone https://github.com/lateralblast/visio-stencils.git visio-stencils
 ```
 
 Currently there is some support for the following vendor stencils:

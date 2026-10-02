@@ -5,6 +5,27 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.6] - 2026-10-02
+
+### Fixed
+- Older Dell rack servers (e.g. R820, R730, R630, C6320) are no longer in `Dell-PowerEdge-RackServers.vss`; they were
+  moved to `Dell-PowerEdge-RackServers-Classic.vss`, so rows for them could not find a master. Both stencils are now
+  registered as needed, with the current-generation models selected by `$dell_current_server_models` and everything
+  else `^R|^C` going to the Classic stencil. The registration gates and shape dispatch use the same condition.
+- The Dell `^R|^C` dispatch case no longer also matches `CX4` models (which have their own case).
+
+## [0.3.5] - 2026-10-02
+
+### Changed
+- Stencil directory renamed from `stencils` to `visio-stencils`, so the
+  https://github.com/lateralblast/visio-stencils repository can be cloned straight into the script directory.
+- Stencil file paths now follow the `visio-stencils` repository layout (`<first letter>/<vendor>/<file>`, e.g.
+  `visio-stencils\d\dell\Dell-Racks.vss`).
+
+### Fixed
+- `unzip_stencil` now also looks for a zip named without the stencil extension (the repository only has
+  `Dell-PowerEdge-RackServers.zip` for the classic `.vss`), and skips the `__MACOSX` folder some zips contain.
+
 ## [0.3.4] - 2026-09-28
 
 ### Fixed
