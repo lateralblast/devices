@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 # Name:         devices (Python)
-# Version:      0.6.0
+# Version:      0.6.2
 # Release:      1
 # License:      CC-BA (Creative Commons By Attribution)
 #               http://creativecommons.org/licenses/by/4.0/legalcode

@@ -12,7 +12,7 @@ param (
 )
 
 # Name:         Devices
-# Version:      0.6.0
+# Version:      0.6.2
 # Release:      1
 # License:      CC BY-NC-SA (Creative Commons Attribution-NonCommercial-ShareAlike)
 #               http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
