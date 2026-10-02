@@ -1,0 +1,6 @@
+# Python packages for devices.py (the PowerShell version needs none of these).
+# devices.py itself only needs Pillow, for JPG output. It runs devon.py with this same
+# Python, so devon's own requirement (selenium) must be installed here too.
+# External tools (libvisio, emf2svg-conv, rsvg-convert) are not pip packages: see the README.
+Pillow>=10
+selenium>=4.6

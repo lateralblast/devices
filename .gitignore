@@ -1,2 +1,4 @@
 CLAUDE.md
 visio-stencils/
+svg-cache/
+__pycache__/

@@ -5,6 +5,42 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2026-10-02
+
+### Added
+- `requirements.txt` for `devices.py`: Pillow (JPG output) and selenium (needed by devon.py, which `devices.py` runs
+  with the same Python).
+
+## [0.5.1] - 2026-10-02
+
+### Changed
+- README now explains how to clone devon.py alongside the `devices` directory, install its requirements and check its
+  dependencies, as it does for the visio-stencils repository.
+
+## [0.5.0] - 2026-10-02
+
+### Added
+- `devices.py` now searches the `visio-stencils` directory layout (`<first letter>/<vendor>/<stencil>`) for a model's
+  stencil when the built-in vendor/model rules have no master for it (unknown vendors and models, or models missing from
+  the rule's stencil, e.g. HPE `DL380 Gen10`, Dell `R650`). It lists the masters in each of the vendor's stencils
+  (cached in `svg-cache/_index`), picks the best front and rear masters, and extracts that stencil to SVGs on demand.
+- `-nodiscover` switch to turn the search off, and `-maxscan N` to limit how many stencils are searched per model.
+- A view with no master (for example a model that only has a front) is drawn as a blank plate stretched to the
+  other view's size.
+
+## [0.4.0] - 2026-10-02
+
+### Added
+- `devices.py`, a Python version of `devices.ps1` that draws the front and rear rack elevations from the CSV using
+  SVGs extracted from the Visio stencils by devon.py, and writes SVG, PNG, JPG or PDF. Needs neither Windows nor Visio.
+  Supports `-longracknames`, `-showlabels`, `-rackperfile` and `-pagelabels`, with the same vendor/model dispatch as
+  the PowerShell script.
+- `svg-cache/` (git ignored) holds the per-master SVGs `devices.py` extracts from each stencil on first use.
+- README documentation for `devices.py`: requirements, usage, switches, output formats and known limitations.
+
+### Changed
+- `devices.py` shares the project version with `devices.ps1`, so both scripts and the README now report 0.4.0.
+
 ## [0.3.6] - 2026-10-02
 
 ### Fixed

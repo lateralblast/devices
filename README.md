@@ -1,7 +1,7 @@
 DEVICES
 =======
 
-Version: 0.3.6
+Version: 0.5.2
 
 Diagram Export in Visio from CSV (and in the future Excel and other Sources)
 
@@ -15,7 +15,8 @@ http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
 Introduction
 ------------
 
-A Powershell script for creating Visio Diagrams of DC racks and the hardware in them.
+A Powershell script for creating Visio Diagrams of DC racks and the hardware in them, and a Python script
+(`devices.py`) that draws the same rack elevations as SVG, PNG, JPG or PDF without needing Windows or Visio.
 
 The import can be in the form of CSV or Excel (still under development).
 
@@ -40,6 +41,82 @@ Thus I started using VisioBot3000 which allows me to set the active page and use
 https://github.com/MikeShepard/VisioBot3000
 
 I have rewritten the script to utilise this powershell module.
+
+Python version
+--------------
+
+`devices.py` produces the same front and rear rack elevations as `devices.ps1` without Windows or Visio. Instead of
+driving Visio it uses SVGs extracted from the Visio stencils by [devon.py](https://github.com/lateralblast/devon)
+and composes them into one drawing per rack. The output format is chosen by the output file extension: `.svg`, `.png`,
+`.jpg` or `.pdf`.
+
+Requirements:
+
+- Python 3 and the packages in `requirements.txt` (`pip install -r requirements.txt`): Pillow for JPG output, and
+  selenium, which devon.py needs and which runs under the same Python
+- [devon.py](https://github.com/lateralblast/devon), found via `-devon PATH`, `$DEVON` or `../devon/devon.py`
+- libvisio (`vss2raw` and `vss2xhtml`), `emf2svg-conv` and `rsvg-convert` on the PATH
+- The visio-stencils repository (see Documentation below)
+
+devon.py is a separate repository. The script looks for it in a `devon` directory next to the `devices` directory
+(`../devon/devon.py`), so clone it alongside:
+
+```
+$ cd ..
+$ git clone https://github.com/lateralblast/devon.git
+$ cd devon
+$ pip install -r requirements.txt
+$ python3 devon.py --checkconfig
+```
+
+`--checkconfig` reports which of devon's dependencies (libvisio's `vss2raw`/`vss2xhtml`, `emf2svg-conv`,
+`rsvg-convert`) are missing, and `--checkconfig --install` tries to install them. If you clone it somewhere else, use
+`-devon PATH` or set the `DEVON` environment variable.
+
+How it works: the first time a stencil is needed it is unzipped and split into one SVG per master under `svg-cache/`
+(the large stencils can take a minute). Each CSV row is then placed in the front and rear rack frame using the same
+vendor/model rules, rack unit size (0.175 inches) and `Top Rack Unit`/`Rack Units` positioning as the PowerShell
+script. To pick up a changed stencil, delete its folder in `svg-cache/`.
+
+Stencil discovery: if a row's vendor/model has no built-in rule, or the rule's stencil has no master for it, the
+script looks in the vendor's directory of the visio-stencils layout (`<first letter>/<vendor>/`, with a few aliases such
+as HP to hpe and Sun to oracle). It lists the masters in each stencil there, most likely first (for example a model
+`DL380` tries stencils with `DL` in their name first, and current stencils before classic ones), and uses the best
+`<model> Front` and `<model> Rear`/`Back` masters. The master lists are cached in `svg-cache/_index`, so only the first
+search for a vendor is slow, and the matching stencil is then extracted to SVGs like any other. A model with no match
+is drawn as a blank plate and a warning is printed. If a model is found in the wrong stencil, or not at all, use
+`-nodiscover` or add a rule to `pick_shape`.
+
+Switches (`python3 devices.py -h` lists them all):
+
+- `-inputfile FILENAME` CSV file (required)
+- `-outputfile FILENAME` output file (required unless `-rackperfile` is used)
+- `-longracknames` append chassis hostnames to the rack names
+- `-showlabels` show a `hostname: component` tag on each device and the rack name beside the rack
+- `-rackperfile` write one file per rack into the `output` directory
+- `-pagelabels` draw the rack name at the top of each page
+- `-stencildir DIR` visio-stencils checkout (default `visio-stencils` next to the script)
+- `-cachedir DIR` extracted SVG cache (default `svg-cache` next to the script)
+- `-devon PATH` path to devon.py
+- `-nodiscover` do not search the visio-stencils directory for models with no built-in rule
+- `-maxscan N` most stencils to search per vendor/model when discovering (default 30)
+- `-dpi N` resolution for PNG and JPG output (default 150)
+- `-verbose`, `-version`
+
+Examples:
+
+```
+$ python3 devices.py -inputfile input/example.csv -outputfile output/example.png -longracknames -showlabels
+$ python3 devices.py -inputfile input/example.csv -outputfile output/example.pdf -longracknames -showlabels -pagelabels
+$ python3 devices.py -inputfile input/example.csv -rackperfile -outputfile x.svg
+```
+
+PDF output is a single file with one page per rack. SVG, PNG and JPG output with several racks gets one file per
+rack, named after the output file (`example_<rack name>.png`). With `-rackperfile` the files are named after the rack
+and the output file only sets the format.
+
+Known limitation: some bezels that use a Visio pattern fill, e.g. the left and right ends of the Pure FlashArray front,
+come out of libvisio as white with black hexagons rather than a black mesh.
 
 Output
 ------
